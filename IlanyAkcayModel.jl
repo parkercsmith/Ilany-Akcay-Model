@@ -4,7 +4,7 @@ edgeMatrix = []
 #matrix; holds all edges in population where row and
 #col are indices of nodes
 
-popSize = 2000
+popSize = 100
 let population = population
     for(i) in 1:popSize
         push!(population, i)
@@ -55,7 +55,7 @@ end
 using Plots
 function linkBarChart()
     freqData = []
-    for(i) in 1:(length(edgeMatrix)-1)
+    for(i) in 1:(length(edgeMatrix))
         counter = 0
         for(ii) in 1:length(edgeMatrix)
             degreeMarker = 0
@@ -104,7 +104,7 @@ end
 
 #Running generations to stabilize
 #Goal is 20*popSize
-numGens = 100
+numGens = 2000
 
 for(g) in 1:numGens
     spliceID = Int(round(rand()*length(population)+.5))
