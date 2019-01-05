@@ -1,19 +1,35 @@
 population = []
+#represents all nodes in population
+edgeMatrix = []
+#matrix; holds all edges in population where row and
+#col are indices of nodes
 
-popSize = 100
+popSize = 2000
 let population = population
     for(i) in 1:popSize
-        push!(population, [])
+        push!(population, i)
     end
 end
+#initialize a population of popSize nodes; each node
+#contains only its index
 
-function indexOf(pop::Array{Any, 1}, parent::Int64, child::Int64)
+for(p) in 1:popSize
+    push!(edgeMatrix, [])
+    for(pp) in 1:popSize
+        push!(edgeMatrix[p], 0)
+    end
+end
+#initialize an empty edge matrix
+
+#=function indexOf(pop::Array{Any, 1}, parent::Int64, child::Int64)
     for(n) in 1:length(pop)
         if(pop[n] === pop[parent][child])
             return n
         end
     end
-end
+end=#
+#OBSOLETE; allowed recursive arrays to identify
+#their own index
 
 numInitEdges = round(1.5*length(population))
 let population = population
@@ -23,44 +39,62 @@ let population = population
             secondID = firstID
             while(secondID == firstID)
                 secondID = Int(round(rand()*length(population)+.5))
-                for(j) in 0:length(population[firstID])
-                    if(j>0)
-                        if(population[firstID][j] === population[secondID])
-                            secondID = firstID
-                        end
-                    end
+                if(edgeMatrix[firstID][secondID] == 1 || edgeMatrix[secondID][firstID] ==1)
+                    secondID = firstID
                 end
             end
-            if(firstID != secondID)
-                push!(population[firstID], population[secondID])
-                push!(population[secondID], population[firstID])
-            else
-                println("Link rebuilt")
-            end
+            edgeMatrix[firstID][secondID] = 1
+            edgeMatrix[secondID][firstID] = 1
     end
 end
+#identifies a number of initial edges based on
+#popSize, creates numInitEdges distinct pairs of
+#distinct indices, and changes value of corresponding
+#edgeMatrix placeholders to 1
 
 using Plots
-function linkBarChart(pop::Array{Any, 1})
+function linkBarChart()
     freqData = []
-    for(i) in 1:(length(pop)-1)
+    for(i) in 1:(length(edgeMatrix)-1)
         counter = 0
-        for(ii) in 1:length(pop)
-            if(length(pop[ii]) >= i)
-                counter = counter + 1
+        for(ii) in 1:length(edgeMatrix)
+            degreeMarker = 0
+            for(iii) in 1:length(edgeMatrix[ii])
+                if(edgeMatrix[ii][iii] == 1)
+                    degreeMarker += 1
+                end
+            end
+            if(degreeMarker >= i)
+                counter += 1
             end
         end
         push!(freqData, counter)
     end
-    zeroCounter = 0
-    for(i) in 1:length(pop)
-        if(length(pop[i])==0)
-            zeroCounter = zeroCounter + 1
+    #Examines each row of edgeMatrix, counts present
+    #edges, and forms cumulative frequency data
+    #based on the count for every possible degree.
+
+    #=zeroCounter = 0
+    for(i) in 1:length(edgeMatrix)
+        noEdges = true
+        for(ii) in 1:length(edgeMatrix[i])
+            if(edgeMatrix[i][ii] == 1)
+                noEdges = false
+            end
         end
-    end
-    pushfirst!(freqData, (zeroCounter+freqData[1]))
+        if(noEdges)
+            zeroCounter += 1
+        end
+    end=#
+    #Above segment counts number of nodes with no
+    #edges. This is unnecessary for a cumulative
+    #frequency graph like the current one, but
+    #is useful to have if a normal frequency graph
+    #is ever used. Below push statement should also
+    #be altered in this case.
+
+    pushfirst!(freqData, popSize#=(zeroCounter+freqData[1])=#)
     #println(freqData)
-    plotAdjust = length(pop)/15
     linkBars = bar(0:1:100, freqData)
     linkBars
 end
@@ -68,65 +102,59 @@ end
 
 #println("New")
 
-#running generations to stabilize (goal is 20n)
-numGens = 200
+#Running generations to stabilize
+#Goal is 20*popSize
+numGens = 100
 
 for(g) in 1:numGens
     spliceID = Int(round(rand()*length(population)+.5))
-    spliceContents = []
-    #print("Cell to be removed has length of $(length(population[spliceID])): ")
-    for(c) in 1:length(population[spliceID])
-        push!(spliceContents, indexOf(population, spliceID, c))
-    end
-    #println(spliceContents)
-    for(s) in 1:length(population)
-        for(ss) in 1:length(population[s])
-            if(population[s][ss] === population[spliceID])
-                #println("$(s) loses its $(ss) connection")
-                splice!(population[s], ss)
-                break
+    #identifies the ID of the node that dies
+    for(s) in 1:length(edgeMatrix)
+        for(ss) in 1:length(edgeMatrix[s])
+            if( s == spliceID || ss == spliceID )
+                edgeMatrix[s][ss] = 0
             end
         end
     end
     #individuals who know the individual that will soon die lose their connections to the latter
-    splice!(population, spliceID)
-    #one individual dies at random
-
 
     momIndex = Int(round(rand()*length(population)+.5))
+    #selects node to birth a new node
     pN = .7
     pR = .3
     #variables for inheritance
+    #pN is the probability that infant nodes form
+    #edges with their parent's neighbors
+    #pR is the probability that infant nodes form
+    #edges with random strangers in the population
 
-    push!(population, [population[momIndex]])
-    push!(population[momIndex], population[length(population)])
-    #forms baby with connection to mother
+    edgeMatrix[spliceID][momIndex] = 1
+    edgeMatrix[momIndex][spliceID] = 1
+    #infant node forms an edge to its parent
 
-    for(n) in 1:length(population[momIndex])
-        if(rand() < pN)
-            push!(population[length(population)], population[momIndex][n])
-            push!(population[n], population[length(population)])
+    for(i) in 1:length(edgeMatrix)
+        momNeighbor = false
+        if(edgeMatrix[momIndex][i] == 1)
+            momNeighbor = true
         end
-    end
-    #adds links with inheritance from mom's links
+        #separates neighbor nodes from stranger nodes
 
-    for(r) in 1:length(population)
-        momLink = false
-        for(n) in 1:length(population[momIndex])
-            if(population[r] === population[momIndex][n])
-                momLink = true
+        if( i != spliceID && edgeMatrix[spliceID][i] == 0)
+            if(momNeighbor && rand() < pN)
+                edgeMatrix[i][spliceID] = 1
+                edgeMatrix[spliceID][i] = 1
+            elseif(!momNeighbor && rand() < pR)
+                edgeMatrix[i][spliceID] = 1
+                edgeMatrix[spliceID][i] = 1
             end
         end
-        if(!momLink)
-            if(rand() < pR)
-                push!(population[length(population)], population[r])
-                push!(population[r], population[length(population)])
-            end
-        end
+        #rules out self and mother from population,
+        #then randomly forms edges with neighbors
+        #and strangers separately at frequencies of
+        #pN and pR respectively.
     end
-    #forms random connections with nodes not connected to mother
-
+    GC.gc()
 end
 
 #println("poplength: $(length(population))")
-linkBarChart(population)
+linkBarChart()
