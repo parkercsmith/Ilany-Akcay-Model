@@ -5,20 +5,24 @@ edgeMatrix = []
 #col are indices of nodes
 
 popSize = 100
-let population = population
-    for(i) in 1:popSize
-        push!(population, i)
-    end
-end
+# let population = population
+#     for(i) in 1:popSize
+#         push!(population, i)
+#     end
+# end
+### JVC: easier to do this
+population = collect(1:popSize)
 #initialize a population of popSize nodes; each node
 #contains only its index
 
-for(p) in 1:popSize
-    push!(edgeMatrix, [])
-    for(pp) in 1:popSize
-        push!(edgeMatrix[p], 0)
-    end
-end
+# for(p) in 1:popSize
+#     push!(edgeMatrix, [])
+#     for(pp) in 1:popSize
+#         push!(edgeMatrix[p], 0)
+#     end
+# end
+### JVC: easier to do this:
+edgeMatrix = zeros(Int8, popSize, popSize)
 #initialize an empty edge matrix
 
 #=function indexOf(pop::Array{Any, 1}, parent::Int64, child::Int64)
@@ -33,7 +37,7 @@ end=#
 
 numInitEdges = round(1.5*length(population))
 let population = population
-    repairedLinks = 0
+    repairedLinks = 0 ### JVC: what does this do?
     for(i) in 1:numInitEdges
             firstID = Int(round(rand()*length(population)+.5))
             secondID = firstID
@@ -41,6 +45,7 @@ let population = population
                 secondID = Int(round(rand()*length(population)+.5))
                 if(edgeMatrix[firstID][secondID] == 1 || edgeMatrix[secondID][firstID] ==1)
                     secondID = firstID
+                    continue ### JVC: move to next iteration of while loop
                 end
             end
             edgeMatrix[firstID][secondID] = 1
@@ -106,8 +111,9 @@ end
 #Goal is 20*popSize
 numGens = 2000
 
+### JVC: put this in a function
 for(g) in 1:numGens
-    spliceID = Int(round(rand()*length(population)+.5))
+    spliceID = round(Int, rand()*length(population)+.5)
     #identifies the ID of the node that dies
     for(s) in 1:length(edgeMatrix)
         for(ss) in 1:length(edgeMatrix[s])
@@ -118,10 +124,10 @@ for(g) in 1:numGens
     end
     #individuals who know the individual that will soon die lose their connections to the latter
 
-    momIndex = Int(round(rand()*length(population)+.5))
+    momIndex = round(Int, rand()*length(population)+.5)
     #selects node to birth a new node
-    pN = .7
-    pR = .3
+    pN = .7 ### JVC: put these outside the loop; no reason to set them everytime
+    pR = .3 ### JVC: same as above
     #variables for inheritance
     #pN is the probability that infant nodes form
     #edges with their parent's neighbors
