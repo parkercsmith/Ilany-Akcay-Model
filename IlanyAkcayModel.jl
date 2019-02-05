@@ -1,8 +1,12 @@
+using StatsBase
+
 population = []
 #represents all nodes in population
 edgeMatrix = []
 #matrix; holds all edges in population where row and
 #col are indices of nodes
+
+global meanCoopRatio = 0.0
 
 mutable struct Node
     strategy::Int8 #1 if cooperator, 0 if defector
@@ -12,12 +16,16 @@ mutable struct Node
 end
 
 popSize = 100
+numInitialCoops = popSize/2
 #population = collect(1:popSize)
-for(i) in 1:popSize
-    if(rand()<.5)
-        push!(population, Node(1, 0, 1, i))
-    else
-        push!(population, Node(0, 0, 1, i))
+let numInitialCoops = numInitialCoops
+    for(i) in 1:popSize
+        if(numInitialCoops > 0)
+            push!(population, Node(1, 0, 1, i))
+            numInitialCoops -= 1
+        else
+            push!(population, Node(0, 0, 1, i))
+        end
     end
 end
 #initialize a population of popSize nodes; each node
@@ -160,7 +168,9 @@ function linkBarChart()
         end
     end
     coopRatio = coopCount/popSize
-    println("Frequency of Cooperation: $(coopRatio)")
+    global meanCoopRatio
+    meanCoopRatio += coopRatio
+    #println("Frequency of Cooperation: $(coopRatio)")
     #=
     linkBars = bar(0:1:popSize, freqData)
     linkBars
@@ -195,8 +205,8 @@ mu = .001
 #its parent does not possess
 
 function runGens(gens::Int64)
-    for(g) in 1:(gens*popSize)
-        spliceID = Int(round(rand()*length(population)+.5))
+    for(g) in 1:(gens * popSize)
+        spliceID = Int(round(rand()*popSize+.5))
         #identifies the ID of the node that dies
         for(s) in 1:popSize
             for(ss) in 1:popSize
@@ -210,26 +220,21 @@ function runGens(gens::Int64)
         #individuals who know the individual that will soon die lose their connections to the latter
 
         fitSum = 0.0
+        fitnesses = []
         for(i) in 1:popSize
             fitSum += population[i].fitness
         end
-
-        tempPop = copy(population)
-        sortedPop = []
         for(i) in 1:popSize
-            maxFitIndex = 0
-            maxFit = 0.0
-            for(ii) in 1:length(tempPop)
-                if(tempPop[ii].fitness >= maxFit)
-                    maxFitIndex = ii
-                    maxFit = tempPop[ii].fitness
-                end
-            end
-            push!(sortedPop, splice!(tempPop, maxFitIndex))
+            push!(fitnesses, population[i].fitness/fitSum)
         end
+        fitWeights = weights(Array{Float64, 1}(fitnesses))
+        momIndex = sample(1:popSize, fitWeights)
 
+        #=
+        tempPop = copy(population)
         fitted = false
-        momIndex = sortedPop[1].ID
+        momIndex = tempPop[1].ID
+        #fitSum -= population[momIndex].fitness
         while(!fitted)
             if(rand() < (population[momIndex].fitness/fitSum))
                 fitted = true
@@ -239,17 +244,25 @@ function runGens(gens::Int64)
                     population[spliceID].strategy = ((population[momIndex].strategy) * (-1)) + 1
                 end
             else
-                popfirst!(sortedPop)
-                momIndex = sortedPop[1].ID
+                popfirst!(tempPop)
+                momIndex = tempPop[1].ID
                 fitSum = 0.0
-                for(p) in 1:length(sortedPop)
-                    fitSum += sortedPop[p].fitness
+                for(p) in 1:length(tempPop)
+                    fitSum += tempPop[p].fitness
                 end
+                #fitSum -= population[momIndex].fitness
             end
         end
+        =#
+
         #selects node to birth a new node
         #FITNESS NOW IMPLEMENTED
 
+        if(rand() > mu)
+            population[spliceID].strategy = population[momIndex].strategy
+        else
+            population[spliceID].strategy = ((population[momIndex].strategy) * (-1)) + 1
+        end
         edgeMatrix[spliceID, momIndex] = 1
         edgeMatrix[momIndex, spliceID] = 1
         #infant node forms an edge to its parent
@@ -308,15 +321,22 @@ function runGens(gens::Int64)
         #calculate fitness based on payoff from above
         for(i) in 1:popSize
                 population[i].fitness = (1.0 + delta) ^ population[i].payoff
+                population[i].payoff = 0
         end
 
         GC.gc()
-        #if((g >= 49000) && (g % 100 == 0))
+        if((g > 100 * popSize) && (g % popSize == 0))
             linkBarChart()
-        #end
+        end
     end
 end
 
-println(popSize)
-runGens(numGens)
+for(x) in 1:100
+    global meanCoopRatio
+    #println(popSize)
+    runGens(numGens)
+    meanCoopRatio = meanCoopRatio/400.0
+    println("Mean Cooperation Ratio: $(meanCoopRatio)")
+    meanCoopRatio = 0.0
+end
 #println("poplength: $(length(population))")
