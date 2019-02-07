@@ -209,8 +209,7 @@ function runGens(over::globals)
                 over.population[i].payoff = 0
         end
 
-        #clears memory and counts cooperators in last 400 generations after 100 birth-death events
-        GC.gc()
+        #counts cooperators in last 400 generations after 100 birth-death events
         if((g > 100 * over.popSize) && (g % over.popSize == 0))
             countCoops(over)
         end
