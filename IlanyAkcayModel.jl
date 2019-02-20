@@ -1,3 +1,5 @@
+#!/usr/bin/env julia
+
 using StatsBase
 using Plots
 using ArgParse
