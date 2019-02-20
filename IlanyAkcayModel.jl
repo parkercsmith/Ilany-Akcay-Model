@@ -1,5 +1,8 @@
 using StatsBase
 using Plots
+using ArgParse
+using FileIO
+using JLD2
 
 #Node structure represents individuals in population
 mutable struct Node
@@ -9,14 +12,14 @@ mutable struct Node
     ID::Int64
 end
 
-#globals structure exists in one instance; contains all universal variables
-mutable struct globals
+#globalstuff structure exists in one instance; contains all universal variables
+mutable struct globalstuff
     popSize::Int64 #number of individuals in population
     edgeMatrix::Array{Int64, 2} #matrix of binary Ints; 1 where connection between row and col index is present
     meanCoopRatio::Float64 #summed over 500 generations, then calculated after core function
     population::Array{Node, 1} #contains 100 Node structs
-    numInitialCoops::Int64 #number of cooperators at initialization of globals; used once per run
-    numInitEdges::Int64 #number of edges in network at initialization of globals; used once per run
+    numInitialCoops::Int64 #number of cooperators at initialization of globalstuff; used once per run
+    numInitEdges::Int64 #number of edges in network at initialization of globalstuff; used once per run
     numGens::Int64 #generations per run; currently last 400 add into meanCoopRatio
     pN::Float64 #probability that infant connects to parent's neighbor
     pR::Float64 #probability that infant connects to random Node
@@ -26,12 +29,13 @@ mutable struct globals
     cost::Float64 #payoff lost by cooperators
     delta::Float64 #strength of selection
     mu::Float64 #chance of strategy mutation in infant
+    cLink::Float64 #payoff lost upon connection of two nodes
 
     #generic constructor takes no parameters; uses same globals for each run
     #CHANGE VARIABLES HERE
-    function globals()
+    function globalstuff(pS::Int64, cL::Float64)
         #basic variables for measurement
-        popSize = 100
+        popSize = pS
         meanCoopRatio = 0.0
 
         #initialization factors (may need to be adjusted)
@@ -40,16 +44,17 @@ mutable struct globals
 
         #specific details of simulation
         numGens = 500
-        pN = .4
-        pR = .03
-        benefit = 2.0
-        synergism = 0.0
+        pN = .5
+        pR = .0001
+        benefit = 1.0
+        synergism = 3.0
         cost = 0.5
         delta = 0.1
         mu = .001
+        cLink = cL
 
         #defines population as a Node Array with 100 spots, then fills it with cooperators at beginning and defectors afterwards
-        population = Array{Node, 1}(undef, 100)
+        population = Array{Node, 1}(undef, popSize)
         for(i) in 1:popSize
             population[i] = Node(0, 0, 1, i)
             if(numInitialCoops > 0)
@@ -74,14 +79,14 @@ mutable struct globals
                 edgeMatrix[secondID, firstID] = 1;
         end
 
-        #constructs globals structure
-        new(popSize, edgeMatrix, meanCoopRatio, population, numInitialCoops, numInitEdges, numGens, pN, pR, benefit, synergism, cost, delta, mu)
+        #constructs globalstuff structure
+        new(popSize, edgeMatrix, meanCoopRatio, population, numInitialCoops, numInitEdges, numGens, pN, pR, benefit, synergism, cost, delta, mu, cLink)
     end
 end
 
 #measurement function; name and contents regularly change
 #CURRENTLY: counts cooperators and adds the frequency of cooperation to meanCoopRatio
-function countCoops(over::globals)
+function countCoops(over::globalstuff)
     coopCount = 0.0
     for(i) in 1:over.popSize
         if(over.population[i].strategy == 1)
@@ -99,8 +104,8 @@ function countCoops(over::globals)
 end
 
 #core function; conducts 100 birth-death events per generation with selection for high payoff
-#accepts globals struct as a parameter
-function runGens(over::globals)
+#accepts globalstuff struct as a parameter
+function runGens(over::globalstuff)
     for(g) in 1:(over.numGens * over.popSize)
 
         #randomly selects a node to die and resets its connections, payoff and fitness
@@ -130,6 +135,8 @@ function runGens(over::globals)
         end
         over.edgeMatrix[spliceID, momIndex] = 1
         over.edgeMatrix[momIndex, spliceID] = 1
+        over.population[spliceID].payoff -= over.cLink
+        over.population[momIndex].payoff -= over.cLink
 
         #formation of edges from infant to various nodes following social inheritance
         for(i) in 1:over.popSize
@@ -143,9 +150,13 @@ function runGens(over::globals)
                 if(momNeighbor && rand() < over.pN)
                     over.edgeMatrix[i, spliceID] = 1
                     over.edgeMatrix[spliceID, i] = 1
+                    over.population[spliceID].payoff -= over.cLink
+                    over.population[i].payoff -= over.cLink
                 elseif(!momNeighbor && rand() < over.pR)
                     over.edgeMatrix[i, spliceID] = 1
                     over.edgeMatrix[spliceID, i] = 1
+                    over.population[spliceID].payoff -= over.cLink
+                    over.population[i].payoff -= over.cLink
                 end
             end
         end
@@ -216,19 +227,41 @@ function runGens(over::globals)
     end
 end
 
-#replicates data for 100 simulations
-for(x) in 1:100
+argTab = ArgParseSettings(description = "arguments and stuff, don't worry about it")
+@add_arg_table argTab begin
+    "--cLink"
+        arg_type = Float64
+        default = 0.0
+end
+parsedArgs = parse_args(argTab)
+costLink = parsedArgs["cLink"]
 
-    #initializes globals structure with generic constructor
-    overlord = globals()
+for(p) in 1:7
+    popSizeWeights = zeros(7)
+    popSizeWeights[p] = 1
+    popSizeWeights = weights(Array{Float64, 1}(popSizeWeights))
+    currPopSize = sample([10,20,50,100,200,500,1000] , popSizeWeights)
+    #replicates data for 100 simulations
+    finalMeanCoopRatio = 0.0
+    for(x) in 1:100
 
-    #clears memory of dead globals structures or nodes
-    GC.gc()
+        #initializes globalstuff structure with generic constructor
+        overlord = globalstuff(currPopSize, cLink)
 
-    #checks efficiency of simulation while running it
-    @time runGens(overlord)
+        #checks efficiency of simulation while running it
+        runGens(overlord)
 
-    #divides meanCooperationRatio by last 400 generations to get a true mean, then outputs
-    overlord.meanCoopRatio = overlord.meanCoopRatio/400.0
-    println("Mean Cooperation Ratio: $(overlord.meanCoopRatio)")
+        #divides meanCooperationRatio by last 400 generations to get a true mean, then outputs
+        overlord.meanCoopRatio = overlord.meanCoopRatio/400.0
+        if(x==1)
+            println("Simulation at popSize = $(overlord.popSize) and cLink = $(overlord.cLink)")
+        end
+        finalMeanCoopRatio += overlord.meanCoopRatio
+    end
+    finalMeanCoopRatio /= 100.0
+    popSizeStr = "$(popSize)"
+    while(length(popSizeStr)<4)
+        popSizeStr = "0" * popSizeStr
+    end
+    save("coopData_$(costLink)_" * popSizeStr * ".jdl2", "parameters", [costLink, popSize], "meanCoopRatio", finalMeanCoopRatio)
 end
