@@ -248,7 +248,7 @@ for(p) in 1:7
     for(x) in 1:100
 
         #initializes globalstuff structure with generic constructor
-        overlord = globalstuff(currPopSize, cLink)
+        overlord = globalstuff(currPopSize, costLink)
 
         #checks efficiency of simulation while running it
         runGens(overlord)
