@@ -121,11 +121,11 @@ function runGens(frequs::frequencies, plots::plotter)
         push!(plots.pqArray, freqs.pq)
         push!(plots.qqArray, freqs.qq)
     end
-    plot(plots.pArray, label = "p")
+    #=plot(plots.pArray, label = "p")
     plot!(plots.qArray, label = "q")
     plot!(plots.ppArray, label = "pp")
     plot!(plots.pqArray, label = "pq")
-    plot!(plots.qqArray, label = "qq")
+    plot!(plots.qqArray, label = "qq")=#
 end
 
 runGens(frequencyStuff, plottingStuff)
