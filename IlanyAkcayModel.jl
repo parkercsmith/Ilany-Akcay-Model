@@ -261,7 +261,7 @@ for(p) in 1:7
         finalMeanCoopRatio += overlord.meanCoopRatio
     end
     finalMeanCoopRatio /= 100.0
-    popSizeStr = "$(currpopSize)"
+    popSizeStr = "$(currPopSize)"
     while(length(popSizeStr)<4)
         popSizeStr = "0" * popSizeStr
     end
