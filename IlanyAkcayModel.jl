@@ -261,9 +261,9 @@ for(p) in 1:7
         finalMeanCoopRatio += overlord.meanCoopRatio
     end
     finalMeanCoopRatio /= 100.0
-    popSizeStr = "$(popSize)"
+    popSizeStr = "$(currpopSize)"
     while(length(popSizeStr)<4)
         popSizeStr = "0" * popSizeStr
     end
-    save("coopData_$(costLink)_" * popSizeStr * ".jdl2", "parameters", [costLink, popSize], "meanCoopRatio", finalMeanCoopRatio)
+    save("coopData_$(costLink)_" * popSizeStr * ".jdl2", "parameters", [costLink, currPopSize], "meanCoopRatio", finalMeanCoopRatio)
 end
