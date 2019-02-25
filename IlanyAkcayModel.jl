@@ -265,5 +265,5 @@ for(p) in 1:7
     while(length(popSizeStr)<4)
         popSizeStr = "0" * popSizeStr
     end
-    save("coopData_$(costLink)_" * popSizeStr * ".jdl2", "parameters", [costLink, currPopSize], "meanCoopRatio", finalMeanCoopRatio)
+    save("coopData_$(costLink)_" * popSizeStr * ".jld2", "parameters", [costLink, currPopSize], "meanCoopRatio", finalMeanCoopRatio)
 end
