@@ -235,7 +235,7 @@ argTab = ArgParseSettings(description = "arguments and stuff, don't worry about 
         arg_type = Float64
         default = 0.0
 end
-parsedArgs = parse_args(argTab)
+parsedArgs = parse_args(ARGS, argTab)
 costLink = parsedArgs["cLink"]
 
 for(p) in 1:7
