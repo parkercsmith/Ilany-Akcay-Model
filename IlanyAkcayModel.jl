@@ -12,6 +12,8 @@ mutable struct Node
     payoff::Float64
     fitness::Float64
     ID::Int64
+    pN::Float64
+    pR::Float64
 end
 
 #globalstuff structure exists in one instance; contains all universal variables
@@ -46,19 +48,19 @@ mutable struct globalstuff
 
         #specific details of simulation
         numGens = 500
-        pN = .5
-        pR = .0001
+        pN = .5 #NOT IN USE; see Node pN
+        pR = .0001 #NOT IN USE; see Node pR
         benefit = 1.0
-        synergism = 3.0
+        synergism = 0.0
         cost = 0.5
-        delta = 0.1
-        mu = .001
+        delta = 0.5
+        mu = .01
         cLink = cL
 
         #defines population as a Node Array with 100 spots, then fills it with cooperators at beginning and defectors afterwards
         population = Array{Node, 1}(undef, popSize)
         for(i) in 1:popSize
-            population[i] = Node(0, 0, 1, i)
+            population[i] = Node(0, 0, 1, i, 0.5, 0.0001)
             if(numInitialCoops > 0)
                 population[i].strategy = 1
                 numInitialCoops -= 1
@@ -131,6 +133,16 @@ function runGens(over::globalstuff)
 
         #mutates 1 in 1000 infants, then connects infant to parent
         if(rand() > over.mu)
+            over.population[spliceID].pN = over.population[momIndex].pN
+        else
+            over.population[spliceID].pN = rand()
+        end
+        if(rand() > over.mu)
+            over.population[spliceID].pR = over.population[momIndex].pR
+        else
+            over.population[spliceID].pR = rand()
+        end
+        if(rand() > over.mu)
             over.population[spliceID].strategy = over.population[momIndex].strategy
         else
             over.population[spliceID].strategy = ((over.population[momIndex].strategy) * (-1)) + 1
@@ -149,12 +161,12 @@ function runGens(over::globalstuff)
                 momNeighbor = true
             end
             if( i != spliceID && over.edgeMatrix[spliceID, i] == 0)
-                if(momNeighbor && rand() < over.pN)
+                if(momNeighbor && rand() < over.population[spliceID].pN)
                     over.edgeMatrix[i, spliceID] = 1
                     over.edgeMatrix[spliceID, i] = 1
                     over.population[spliceID].payoff -= over.cLink
                     over.population[i].payoff -= over.cLink
-                elseif(!momNeighbor && rand() < over.pR)
+                elseif(!momNeighbor && rand() < over.population[spliceID].pR)
                     over.edgeMatrix[i, spliceID] = 1
                     over.edgeMatrix[spliceID, i] = 1
                     over.population[spliceID].payoff -= over.cLink
