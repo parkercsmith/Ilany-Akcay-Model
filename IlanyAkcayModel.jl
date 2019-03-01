@@ -149,8 +149,6 @@ function runGens(over::globalstuff)
         end
         over.edgeMatrix[spliceID, momIndex] = 1
         over.edgeMatrix[momIndex, spliceID] = 1
-        over.population[spliceID].payoff -= over.cLink
-        over.population[momIndex].payoff -= over.cLink
 
         #formation of edges from infant to various nodes following social inheritance
         for(i) in 1:over.popSize
@@ -164,13 +162,9 @@ function runGens(over::globalstuff)
                 if(momNeighbor && rand() < over.population[spliceID].pN)
                     over.edgeMatrix[i, spliceID] = 1
                     over.edgeMatrix[spliceID, i] = 1
-                    over.population[spliceID].payoff -= over.cLink
-                    over.population[i].payoff -= over.cLink
                 elseif(!momNeighbor && rand() < over.population[spliceID].pR)
                     over.edgeMatrix[i, spliceID] = 1
                     over.edgeMatrix[spliceID, i] = 1
-                    over.population[spliceID].payoff -= over.cLink
-                    over.population[i].payoff -= over.cLink
                 end
             end
         end
@@ -225,6 +219,13 @@ function runGens(over::globalstuff)
 
                 #subtracts cost from identified cooperator node's payoff
                 over.population[i].payoff -= over.cost
+            end
+
+            #nodes pay for all of their edges at cLink
+            for(ii) in 1:over.popSize
+                if(edgeMatrix[i, ii] == 1 || edgeMatrix[ii, i] == 1)
+                    over.population[i].payoff -= over.cLink
+                end
             end
         end
 
