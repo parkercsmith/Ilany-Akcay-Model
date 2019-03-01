@@ -50,7 +50,7 @@ mutable struct globalstuff
         numGens = 500
         pN = .5 #NOT IN USE; see Node pN
         pR = .0001 #NOT IN USE; see Node pR
-        benefit = 1.0
+        benefit = 2.0
         synergism = 0.0
         cost = 0.5
         delta = 0.5
