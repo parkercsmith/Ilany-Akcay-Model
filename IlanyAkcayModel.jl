@@ -223,7 +223,7 @@ function runGens(over::globalstuff)
 
             #nodes pay for all of their edges at cLink
             for(ii) in 1:over.popSize
-                if(edgeMatrix[i, ii] == 1 || edgeMatrix[ii, i] == 1)
+                if(over.edgeMatrix[i, ii] == 1 || over.edgeMatrix[ii, i] == 1)
                     over.population[i].payoff -= over.cLink
                 end
             end
