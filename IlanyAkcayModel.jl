@@ -258,10 +258,12 @@ for(p) in 1:6
     currPopSize = sample([10,20,50,100,200,500] , popSizeWeights)
     #replicates data for 100 simulations
     finalMeanCoopRatio = 0.0
+    benVal = 0.0
     for(x) in 1:100
 
         #initializes globalstuff structure with generic constructor
         overlord = globalstuff(currPopSize, costLink)
+        benVal = overlord.benefit
 
         #checks efficiency of simulation while running it
         runGens(overlord)
@@ -278,5 +280,5 @@ for(p) in 1:6
     while(length(popSizeStr)<4)
         popSizeStr = "0" * popSizeStr
     end
-    save("coopData_$(costLink)_" * popSizeStr * ".jld2", "parameters", [costLink, currPopSize], "meanCoopRatio", finalMeanCoopRatio)
+    save("coopData_$(costLink)_" * popSizeStr * "_B$(benVal).jld2", "parameters", [costLink, currPopSize], "meanCoopRatio", finalMeanCoopRatio)
 end
