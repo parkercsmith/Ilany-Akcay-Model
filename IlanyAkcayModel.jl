@@ -50,7 +50,7 @@ mutable struct globalstuff
         numGens = 500
         pN = .5 #NOT IN USE; see Node pN
         pR = .0001 #NOT IN USE; see Node pR
-        benefit = 2.0
+        benefit = 5.0
         synergism = 0.0
         cost = 0.5
         delta = 0.5
@@ -251,11 +251,11 @@ end
 parsedArgs = parse_args(ARGS, argTab)
 costLink = parsedArgs["cLink"]
 
-for(p) in 1:7
-    popSizeWeights = zeros(7)
+for(p) in 1:6
+    popSizeWeights = zeros(6)
     popSizeWeights[p] = 1
     popSizeWeights = weights(Array{Float64, 1}(popSizeWeights))
-    currPopSize = sample([10,20,50,100,200,500,1000] , popSizeWeights)
+    currPopSize = sample([10,20,50,100,200,500] , popSizeWeights)
     #replicates data for 100 simulations
     finalMeanCoopRatio = 0.0
     for(x) in 1:100
