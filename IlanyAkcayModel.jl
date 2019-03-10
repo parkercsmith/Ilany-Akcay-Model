@@ -135,12 +135,24 @@ function runGens(over::globalstuff)
         if(rand() > over.mu)
             over.population[spliceID].pN = over.population[momIndex].pN
         else
-            over.population[spliceID].pN = rand()
+            mutAddend = randn()/100.0
+            over.population[spliceID].pN = over.population[momIndex].pN + mutAddend
+            if(over.population[spliceID].pN > 1)
+                over.population[spliceID].pN = 1
+            elseif(over.population[spliceID].pN < 0)
+                over.population[spliceID].pN = 0
+            end
         end
         if(rand() > over.mu)
             over.population[spliceID].pR = over.population[momIndex].pR
         else
-            over.population[spliceID].pR = rand()
+            mutAddend = randn()/100.0
+            over.population[spliceID].pR = over.population[momIndex].pR + mutAddend
+            if(over.population[spliceID].pR > 1)
+                over.population[spliceID].pR = 1
+            elseif(over.population[spliceID].pR < 0)
+                over.population[spliceID].pR = 0
+            end
         end
         if(rand() > over.mu)
             over.population[spliceID].strategy = over.population[momIndex].strategy
