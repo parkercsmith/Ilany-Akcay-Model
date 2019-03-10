@@ -37,9 +37,9 @@ mutable struct globalstuff
 
     #generic constructor takes no parameters; uses same globals for each run
     #CHANGE VARIABLES HERE
-    function globalstuff(pS::Int64, cL::Float64)
+    function globalstuff(ben::Float64, cL::Float64)
         #basic variables for measurement
-        popSize = pS
+        popSize = 100
         meanCoopRatio = 0.0
 
         #initialization factors (may need to be adjusted)
@@ -50,7 +50,7 @@ mutable struct globalstuff
         numGens = 500
         pN = .5 #NOT IN USE; see Node pN
         pR = .0001 #NOT IN USE; see Node pR
-        benefit = -2.0
+        benefit = ben
         synergism = 0.0
         cost = -0.5
         delta = 0.5
@@ -91,14 +91,12 @@ end
 #measurement function; name and contents regularly change
 #CURRENTLY: counts cooperators and adds the frequency of cooperation to meanCoopRatio
 function countCoops(over::globalstuff)
-    coopCount = 0.0
+    pNTotal = 0.0
     for(i) in 1:over.popSize
-        if(over.population[i].strategy == 1)
-            coopCount += 1.0
-        end
+        pNTotal += over.population[i].pN
     end
-    coopRatio = coopCount/over.popSize
-    over.meanCoopRatio += coopRatio
+    pNTotal /= over.popSize
+    over.meanCoopRatio += pNTotal
 
     #vestigial bar chart formatting (may be used later)
     #=
@@ -264,17 +262,18 @@ parsedArgs = parse_args(ARGS, argTab)
 costLink = parsedArgs["cLink"]
 
 for(p) in 1:6
-    popSizeWeights = zeros(6)
-    popSizeWeights[p] = 1
-    popSizeWeights = weights(Array{Float64, 1}(popSizeWeights))
-    currPopSize = sample([10,20,50,100,200,500] , popSizeWeights)
+    benWeights = zeros(6)
+    benWeights[b] = 1
+    benWeights = weights(Array{Float64, 1}(benWeights))
+    currBenefit = sample([3,4,5,6,7,8] , benWeights)
     #replicates data for 100 simulations
-    finalMeanCoopRatio = 0.0
+    finalMeanPN = 0.0
     benVal = 0.0
-    for(x) in 1:100
+    repSims = 10
+    for(x) in 1:repSims
 
         #initializes globalstuff structure with generic constructor
-        overlord = globalstuff(currPopSize, costLink)
+        overlord = globalstuff(currBenefit, costLink)
         benVal = overlord.benefit
 
         #checks efficiency of simulation while running it
@@ -285,12 +284,14 @@ for(p) in 1:6
         if(x==1)
             println("Simulation at popSize = $(overlord.popSize) and cLink = $(overlord.cLink)")
         end
-        finalMeanCoopRatio += overlord.meanCoopRatio
+        finalMeanPN += overlord.meanCoopRatio
     end
-    finalMeanCoopRatio /= 100.0
+    finalMeanPN /= 10.0
+    #=
     popSizeStr = "$(currPopSize)"
     while(length(popSizeStr)<4)
         popSizeStr = "0" * popSizeStr
     end
-    save("confData_$(costLink)_" * popSizeStr * "_B$(-benVal).jld2", "parameters", [costLink, currPopSize], "meanCoopRatio", finalMeanCoopRatio)
+    =#
+    save("pnData_$(costLink)_B$(-benVal).jld2", "parameters", [costLink, benVal], "meanPN", finalMeanPN)
 end
