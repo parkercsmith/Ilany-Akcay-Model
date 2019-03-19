@@ -261,7 +261,7 @@ end
 parsedArgs = parse_args(ARGS, argTab)
 costLink = parsedArgs["cLink"]
 
-for(p) in 1:6
+for(b) in 1:6
     benWeights = zeros(6)
     benWeights[b] = 1
     benWeights = weights(Array{Float64, 1}(benWeights))
@@ -293,5 +293,5 @@ for(p) in 1:6
         popSizeStr = "0" * popSizeStr
     end
     =#
-    save("pnData_$(costLink)_B$(-benVal).jld2", "parameters", [costLink, benVal], "meanPN", finalMeanPN)
+    save("pnData_$(costLink)_B$(benVal).jld2", "parameters", [costLink, benVal], "meanPN", finalMeanPN)
 end
