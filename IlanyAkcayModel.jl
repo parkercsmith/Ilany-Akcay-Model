@@ -133,6 +133,7 @@ function runGens(over::globalstuff)
         if(rand() > over.mu)
             over.population[spliceID].pN = over.population[momIndex].pN
         else
+            #=
             mutAddend = randn()/100.0
             over.population[spliceID].pN = over.population[momIndex].pN + mutAddend
             if(over.population[spliceID].pN > 1)
@@ -140,6 +141,8 @@ function runGens(over::globalstuff)
             elseif(over.population[spliceID].pN < 0)
                 over.population[spliceID].pN = 0
             end
+            =#
+            over.population[spliceID].pN = rand()
         end
         if(rand() > over.mu)
             over.population[spliceID].pR = over.population[momIndex].pR
