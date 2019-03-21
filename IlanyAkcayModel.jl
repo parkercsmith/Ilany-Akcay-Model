@@ -262,7 +262,7 @@ end
 parsedArgs = parse_args(ARGS, argTab)
 costLink = parsedArgs["cLink"]
 
-for(b) in 1:6
+for(b) in 1:1# EDIT 6
     benWeights = zeros(6)
     benWeights[b] = 1
     benWeights = weights(Array{Float64, 1}(benWeights))
@@ -281,7 +281,7 @@ for(b) in 1:6
         runGens(overlord)
 
         #divides meanCooperationRatio by last 400 generations to get a true mean, then outputs
-        overlord.meanCoopRatio = overlord.meanCoopRatio/400.0
+        overlord.meanCoopRatio = overlord.meanCoopRatio/80000.0
         if(x==1)
             println("Simulation at popSize = $(overlord.popSize) and cLink = $(overlord.cLink)")
         end
