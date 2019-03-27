@@ -262,11 +262,11 @@ end
 parsedArgs = parse_args(ARGS, argTab)
 costLink = parsedArgs["cLink"]
 
-for(b) in 1:5
-    benWeights = zeros(5)
+for(b) in 1:1 #edit here
+    benWeights = zeros(1)
     benWeights[b] = 1
     benWeights = weights(Array{Float64, 1}(benWeights))
-    currBenefit = sample([4.0,5.0,6.0,7.0,8.0] , benWeights)
+    currBenefit = sample([3.0] , benWeights)
     #replicates data for 100 simulations
     finalMeanPN = 0.0
     benVal = 0.0
