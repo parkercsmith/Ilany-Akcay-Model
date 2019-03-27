@@ -48,7 +48,7 @@ mutable struct globalstuff
 
         #specific details of simulation
         numGens = 100000
-        pN = .5 #NOT IN USE; see Node pN
+        pN = .75 #NOT IN USE; see Node pN
         pR = .0001 #NOT IN USE; see Node pR
         benefit = ben
         synergism = 0.0
@@ -60,7 +60,7 @@ mutable struct globalstuff
         #defines population as a Node Array with 100 spots, then fills it with cooperators at beginning and defectors afterwards
         population = Array{Node, 1}(undef, popSize)
         for(i) in 1:popSize
-            population[i] = Node(0, 0, 1, i, 0.5, 0.0001)
+            population[i] = Node(0, 0, 1, i, 0.75, 0.0001)#adjust pn and pr here
             if(numInitialCoops > 0)
                 population[i].strategy = 1
                 numInitialCoops -= 1
@@ -294,5 +294,5 @@ for(b) in 1:1 #edit here
         popSizeStr = "0" * popSizeStr
     end
     =#
-    save("pnData_$(costLink)_B$(benVal).jld2", "parameters", [costLink, benVal], "meanPN", finalMeanPN)
+    save("highpnData_$(costLink)_B$(benVal).jld2", "parameters", [costLink, benVal], "meanPN", finalMeanPN)
 end
