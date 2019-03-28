@@ -247,7 +247,7 @@ function runGens(over::globalstuff)
         end
 
         #counts cooperators in last 400 generations after 100 birth-death events
-        if((g > 100 * over.popSize) && (g % over.popSize == 0))
+        if((g > 200 * over.popSize) && (g % over.popSize == 0))
             countCoops(over)
         end
     end
