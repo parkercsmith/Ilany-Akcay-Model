@@ -96,7 +96,7 @@ mutable struct globalstuff
         end
 
         #constructs globalstuff structure
-        new(popSize, edgeMatrix, meanCoopRatio, population, numInitialCoops, numInitEdges, numGens, pN, pR, benefit, synergism, cost, delta, mu, cLink)
+        new(popSize, edgeMatrix, meanCoopRatio, meanProbNeighbor, meanProbRandom, meanDegree, meanCoopDegree, meanDefDegree, meanCoopDefDistance, population, numInitialCoops, numInitEdges, numGens, pN, pR, benefit, synergism, cost, delta, mu, cLink)
     end
 end
 
