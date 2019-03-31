@@ -132,7 +132,7 @@ function countCoops(over::globalstuff)
     for(i) in 1:over.popSize
         degCounter = 0
         for(ii) in 1:over.popSize
-            if(over.edgeMatrix[i][ii] == 1)
+            if(over.edgeMatrix[i, ii] == 1)
                 degCounter += 1
             end
         end
