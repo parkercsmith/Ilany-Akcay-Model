@@ -153,7 +153,7 @@ function countCoops(over::globalstuff)
     distanceTotal = 0.0
     for(i) in 1:over.popSize
         found = false
-        usualSuspects = zeros(over.popSize * over.popSize)
+        usualSuspects = zeros(Int64, over.popSize * over.popSize)
         susCounter = 1
         distCount = 1
         for(ii) in 1:over.popSize
