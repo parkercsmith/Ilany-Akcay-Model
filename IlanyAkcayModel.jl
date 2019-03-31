@@ -360,7 +360,7 @@ for(b) in 0:1:10 #edit here
     benWeights[b] = 1
     benWeights = weights(Array{Float64, 1}(benWeights))
     currBenefit = sample([3.0] , benWeights)=#
-    currBenefit = b
+    currBenefit = Float64(b)
     #replicates data for 100 simulations
     finalMeanPN = 0.0
     benVal = 0.0
