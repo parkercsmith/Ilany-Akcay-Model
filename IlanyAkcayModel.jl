@@ -157,7 +157,7 @@ function countCoops(over::globalstuff)
         susCounter = 1
         distCount = 1
         for(ii) in 1:over.popSize
-            if(over.edgeMatrix[i][ii] == 1)
+            if(over.edgeMatrix[i, ii] == 1)
                 usualSuspects[susCounter] = ii
                 susCounter += 1
             end
@@ -176,7 +176,7 @@ function countCoops(over::globalstuff)
                 for(s) in 1:length(usualSuspects)
                     if(usualSuspects[s] != 0)
                         for(ii) in 1:over.popSize
-                            if(over.edgeMatrix[usualSuspects[s]][ii] == 1)
+                            if(over.edgeMatrix[usualSuspects[s], ii] == 1)
                                 usualSuspects[susCounter] = ii
                                 susCounter += 1
                             end
