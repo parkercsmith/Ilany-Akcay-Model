@@ -110,14 +110,14 @@ function countCoops(over::globalstuff)
     end
     pNTotal /= over.popSize
     over.meanProbNeighbor += pNTotal
-    =#
+
     pRTotal = 0.0
     for(i) in 1:over.popSize
         pRTotal += over.population[i].pR
     end
     pRTotal /= over.popSize
     over.meanProbRandom += pRTotal
-    #=
+
     coopTotal = 0.0
     for(i) in 1:over.popSize
         if(over.population[i].strategy == 1)
@@ -126,7 +126,7 @@ function countCoops(over::globalstuff)
     end
     coopTotal /= over.popSize
     over.meanCoopRatio += coopTotal
-
+    =#
     degTotal = 0.0
     coopDegTotal = 0.0
     defDegTotal = 0.0
@@ -150,7 +150,7 @@ function countCoops(over::globalstuff)
     over.meanDegree += degTotal
     over.meanCoopDegree += coopDegTotal
     over.meanDefDegree += defDegTotal
-
+    #=
     distanceTotal = 0.0
     for(i) in 1:over.popSize
         found = false
@@ -380,12 +380,12 @@ for(b) in 0:1:10 #edit here
         #divides meanCooperationRatio by last 400 generations to get a true mean, then outputs
         #= THIS SEGMENT CHANGES FOR EACH TYPE OF DATA
         overlord.meanProbNeighbor = overlord.meanProbNeighbor/80000.0
-        =#
         overlord.meanProbRandom = overlord.meanProbRandom/80000.0
-        #=
+        =#
         overlord.meanDegree = overlord.meanDegree/80000.0
         overlord.meanCoopDegree = overlord.meanCoopDegree/80000.0
         overlord.meanDefDegree = overlord.meanDefDegree/80000.0
+        #=
         overlord.meanCoopRatio = overlord.meanCoopRatio/80000.0
         overlord.meanCoopDefDistance = overlord.meanCoopDefDistance/80000.0
         =#
@@ -395,24 +395,24 @@ for(b) in 0:1:10 #edit here
         end
         #= THIS SEGMENT CHANGES FOR EACH TYPE OF DATA
         finalMeanPN += overlord.meanProbNeighbor
-        =#
         finalMeanPR += overlord.meanProbRandom
-        #=
+        =#
         finalMeanDegree += overlord.meanDegree
         finalMeanCoopDegree += overlord.meanCoopDegree
         finalMeanDefDegree += overlord.meanDefDegree
+        #=
         finalMeanDistance += overlord.meanCoopDefDistance
         finalMeanCoopRatio += overlord.meanCoopRatio
         =#
     end
     #= THIS SEGMENT CHANGES FOR EACH TYPE OF DATA
     finalMeanPN /= 10.0
-    =#
     finalMeanPR /= 10.0
-    #=
+    =#
     finalMeanDegree /= 10.0
     finalMeanCoopDegree /= 10.0
     finalMeanDefDegree /= 10.0
+    #=
     finalMeanDistance /= 10.0
     finalMeanCoopRatio /= 10.0
     =#
@@ -423,5 +423,5 @@ for(b) in 0:1:10 #edit here
         popSizeStr = "0" * popSizeStr
     end
     =#
-    save("expDataPN_CL$(costLink)_B$(benVal).jld2", "parameters", [costLink, benVal],#= "meanPN", finalMeanPN,=# "meanPR", finalMeanPR#=, "meanDegree", finalMeanDegree, "meanDefectorDegree", finalMeanDefDegree, "meanCooperatorDegree", finalMeanCoopDegree, "meanDistanceFromDefToCoop", finalMeanDistance, "meanCooperationRatio", finalMeanCoopRatio=#)
+    save("expDataDegs_CL$(costLink)_B$(benVal).jld2", "parameters", [costLink, benVal],#= "meanPN", finalMeanPN, "meanPR", finalMeanPR,=# "meanDegree", finalMeanDegree, "meanDefectorDegree", finalMeanDefDegree, "meanCooperatorDegree", finalMeanCoopDegree#=, "meanDistanceFromDefToCoop", finalMeanDistance, "meanCooperationRatio", finalMeanCoopRatio=#)
 end
