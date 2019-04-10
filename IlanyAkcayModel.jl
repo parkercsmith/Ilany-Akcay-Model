@@ -109,7 +109,7 @@ function countCoops(over::globalstuff)
     end
     pNTotal /= over.popSize
     over.meanProbNeighbor += pNTotal
-
+    #= THIS SEGMENT CHANGES FOR EACH TYPE OF DATA
     pRTotal = 0.0
     for(i) in 1:over.popSize
         pRTotal += over.population[i].pR
@@ -190,6 +190,7 @@ function countCoops(over::globalstuff)
     end
     distanceTotal /= over.popSize
     over.meanCoopDefDistance += distanceTotal
+    =#
 
     #vestigial bar chart formatting (may be used later)
     #=
@@ -377,36 +378,43 @@ for(b) in 0:1:10 #edit here
 
         #divides meanCooperationRatio by last 400 generations to get a true mean, then outputs
         overlord.meanProbNeighbor = overlord.meanProbNeighbor/80000.0
+        #= THIS SEGMENT CHANGES FOR EACH TYPE OF DATA
         overlord.meanProbRandom = overlord.meanProbRandom/80000.0
         overlord.meanDegree = overlord.meanDegree/80000.0
         overlord.meanCoopDegree = overlord.meanCoopDegree/80000.0
         overlord.meanDefDegree = overlord.meanDefDegree/80000.0
         overlord.meanCoopRatio = overlord.meanCoopRatio/80000.0
         overlord.meanCoopDefDistance = overlord.meanCoopDefDistance/80000.0
+        =#
 
         if(x==1)
         #    println("Simulation at popSize = $(overlord.popSize) and cLink = $(overlord.cLink)")
         end
         finalMeanPN += overlord.meanProbNeighbor
+        #= THIS SEGMENT CHANGES FOR EACH TYPE OF DATA
         finalMeanPR += overlord.meanProbRandom
         finalMeanDegree += overlord.meanDegree
         finalMeanCoopDegree += overlord.meanCoopDegree
         finalMeanDefDegree += overlord.meanDefDegree
         finalMeanDistance += overlord.meanCoopDefDistance
         finalMeanCoopRatio += overlord.meanCoopRatio
+        =#
     end
     finalMeanPN /= 10.0
+    #= THIS SEGMENT CHANGES FOR EACH TYPE OF DATA
     finalMeanPR /= 10.0
     finalMeanDegree /= 10.0
     finalMeanCoopDegree /= 10.0
     finalMeanDefDegree /= 10.0
     finalMeanDistance /= 10.0
     finalMeanCoopRatio /= 10.0
+    =#
+
     #=
     popSizeStr = "$(currPopSize)"
     while(length(popSizeStr)<4)
         popSizeStr = "0" * popSizeStr
     end
     =#
-    save("exploratoryData_$(costLink)_B$(benVal).jld2", "parameters", [costLink, benVal], "meanPN", finalMeanPN, "meanPR", finalMeanPR, "meanDegree", finalMeanDegree, "meanDefectorDegree", finalMeanDefDegree, "meanCooperatorDegree", finalMeanCoopDegree, "meanDistanceFromDefToCoop", finalMeanDistance, "meanCooperationRatio", finalMeanCoopRatio)
+    save("expDataPN_CL$(costLink)_B$(benVal).jld2", "parameters", [costLink, benVal], "meanPN", finalMeanPN#=, "meanPR", finalMeanPR, "meanDegree", finalMeanDegree, "meanDefectorDegree", finalMeanDefDegree, "meanCooperatorDegree", finalMeanCoopDegree, "meanDistanceFromDefToCoop", finalMeanDistance, "meanCooperationRatio", finalMeanCoopRatio=#)
 end
