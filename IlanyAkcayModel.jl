@@ -366,6 +366,12 @@ for(b) in 0:1:10 #edit here
     currBenefit = Float64(currBenefit)
     #replicates data for 100 simulations
     finalMeanPN = 0.0
+    finalMeanPR = 0.0
+    finalMeanDegree = 0.0
+    finalMeanCoopDegree = 0.0
+    finalMeanDefDegree = 0.0
+    finalMeanDistance = 0.0
+    finalMeanCoopRatio = 0.0
     benVal = 0.0
     repSims = 10
     for(x) in 1:repSims
