@@ -117,7 +117,7 @@ function countCoops(over::globalstuff)
     end
     pRTotal /= over.popSize
     over.meanProbRandom += pRTotal
-    =#
+
     coopTotal = 0.0
     for(i) in 1:over.popSize
         if(over.population[i].strategy == 1)
@@ -126,8 +126,9 @@ function countCoops(over::globalstuff)
     end
     coopTotal /= over.popSize
     over.meanCoopRatio += coopTotal
-    #=
+    =#
     degTotal = 0.0
+    cooperatorsPresent = 0
     coopDegTotal = 0.0
     defDegTotal = 0.0
     for(i) in 1:over.popSize
@@ -140,17 +141,18 @@ function countCoops(over::globalstuff)
         degTotal += degCounter
         if(over.population[i].strategy == 1)
             coopDegTotal += degCounter
+            cooperatorsPresent += 1
         else
             defDegTotal += degCounter
         end
     end
     degTotal /= over.popSize
-    defDegTotal /= over.popSize
-    coopDegTotal /= over.popSize
+    defDegTotal /= over.popSize - cooperatorsPresent
+    coopDegTotal /= cooperatorsPresent
     over.meanDegree += degTotal
     over.meanCoopDegree += coopDegTotal
     over.meanDefDegree += defDegTotal
-
+    #=DEGREES MUST BE RECALCULATED
     distanceTotal = 0.0
     for(i) in 1:over.popSize
         found = false
@@ -191,12 +193,6 @@ function countCoops(over::globalstuff)
     end
     distanceTotal /= over.popSize
     over.meanCoopDefDistance += distanceTotal
-    =#
-    
-    #vestigial bar chart formatting (may be used later)
-    #=
-    linkBars = bar(0:1:popSize, freqData)
-    linkBars
     =#
 end
 
