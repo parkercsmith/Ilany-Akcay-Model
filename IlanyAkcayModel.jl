@@ -103,21 +103,21 @@ end
 #measurement function; name and contents regularly change
 #CURRENTLY: counts cooperators and adds the frequency of cooperation to meanCoopRatio
 function countCoops(over::globalstuff)
-    #= THIS SEGMENT CHANGES FOR EACH TYPE OF DATA
+    # THIS SEGMENT CHANGES FOR EACH TYPE OF DATA
     pNTotal = 0.0
     for(i) in 1:over.popSize
         pNTotal += over.population[i].pN
     end
     pNTotal /= over.popSize
     over.meanProbNeighbor += pNTotal
-    =#
+    #=
     pRTotal = 0.0
     for(i) in 1:over.popSize
         pRTotal += over.population[i].pR
     end
     pRTotal /= over.popSize
     over.meanProbRandom += pRTotal
-    #=
+
     coopTotal = 0.0
     for(i) in 1:over.popSize
         if(over.population[i].strategy == 1)
@@ -411,5 +411,5 @@ for(b) in 0:1:10 #edit here
         popSizeStr = "0" * popSizeStr
     end
     =#
-    save("expDataCoop_CL$(costLink)_B$(benVal).jld2", "parameters", [costLink, benVal],#= "meanPN", finalMeanPN,=# "meanPR", finalMeanPR#=, "meanDegree", finalMeanDegree, "meanDefectorDegree", finalMeanDefDegree, "meanCooperatorDegree", finalMeanCoopDegree, "meanDistanceFromDefToCoop", finalMeanDistance, "meanCooperationRatio", finalMeanCoopRatio=#)
+    save("expDataCoop_CL$(costLink)_B$(benVal).jld2", "parameters", [costLink, benVal], "meanPN", finalMeanPN#=, "meanPR", finalMeanPR#=, "meanDegree", finalMeanDegree, "meanDefectorDegree", finalMeanDefDegree, "meanCooperatorDegree", finalMeanCoopDegree, "meanDistanceFromDefToCoop", finalMeanDistance, "meanCooperationRatio", finalMeanCoopRatio=#)
 end
