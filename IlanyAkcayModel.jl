@@ -147,12 +147,12 @@ function countCoops(over::globalstuff)
         end
     end
     degTotal /= over.popSize
-    defDegTotal /= over.popSize - cooperatorsPresent
+    defDegTotal /= (over.popSize - cooperatorsPresent)
     coopDegTotal /= cooperatorsPresent
     over.meanDegree += degTotal
     over.meanCoopDegree += coopDegTotal
     over.meanDefDegree += defDegTotal
-    #=DEGREES MUST BE RECALCULATED
+    #=#DEGREES MUST BE RECALCULATED
     distanceTotal = 0.0
     for(i) in 1:over.popSize
         found = false
@@ -338,7 +338,7 @@ function runGens(over::globalstuff)
         end
 
         #counts cooperators in last 400 generations after 100 birth-death events
-        if((g > 200 * over.popSize) && (g % over.popSize == 0))
+        if((g > 20000 * over.popSize) && (g % over.popSize == 0))
             countCoops(over)
         end
     end
