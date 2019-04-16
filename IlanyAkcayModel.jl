@@ -127,7 +127,7 @@ function countCoops(over::globalstuff)
     end
     coopTotal /= over.popSize
     over.meanCoopRatio += coopTotal
-
+    =#
     degTotal = 0.0
     cooperatorsPresent = 0
     coopDegTotal = 0.0
@@ -153,7 +153,7 @@ function countCoops(over::globalstuff)
     over.meanDegree += degTotal
     over.meanCoopDegree += coopDegTotal
     over.meanDefDegree += defDegTotal
-    =#
+    #=
     distanceTotal = 0.0
     for(i) in 1:over.popSize
         found = false
@@ -194,7 +194,7 @@ function countCoops(over::globalstuff)
     end
     distanceTotal /= over.popSize
     over.meanCoopDefDistance += distanceTotal
-
+    =#
 end
 
 #core function; conducts 100 birth-death events per generation with selection for high payoff
@@ -412,5 +412,5 @@ for(b) in 0:1:10 #edit here
         popSizeStr = "0" * popSizeStr
     end
     =#
-    save("expDataCoop_CL$(costLink)_B$(benVal).jld2", "parameters", [costLink, benVal],#= "meanPN", finalMeanPN, "meanPR", finalMeanPR, "meanDegree", finalMeanDegree, "meanDefectorDegree", finalMeanDefDegree, "meanCooperatorDegree", finalMeanCoopDegree,=# "meanDistanceFromDefToCoop", finalMeanDistance#=, "meanCooperationRatio", finalMeanCoopRatio=#)
+    save("expDataDegs_CL$(costLink)_B$(benVal).jld2", "parameters", [costLink, benVal],#= "meanPN", finalMeanPN, "meanPR", finalMeanPR,=# "meanDegree", finalMeanDegree, "meanDefectorDegree", finalMeanDefDegree, "meanCooperatorDegree", finalMeanCoopDegree#=, "meanDistanceFromDefToCoop", finalMeanDistance, "meanCooperationRatio", finalMeanCoopRatio=#)
 end
