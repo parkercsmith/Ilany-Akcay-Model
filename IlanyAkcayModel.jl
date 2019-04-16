@@ -111,14 +111,14 @@ function countCoops(over::globalstuff)
     end
     pNTotal /= over.popSize
     over.meanProbNeighbor += pNTotal
-
+    =#
     pRTotal = 0.0
     for(i) in 1:over.popSize
         pRTotal += over.population[i].pR
     end
     pRTotal /= over.popSize
     over.meanProbRandom += pRTotal
-
+    #=
     coopTotal = 0.0
     for(i) in 1:over.popSize
         if(over.population[i].strategy == 1)
@@ -127,7 +127,7 @@ function countCoops(over::globalstuff)
     end
     coopTotal /= over.popSize
     over.meanCoopRatio += coopTotal
-    =#
+
     degTotal = 0.0
     cooperatorsPresent = 0
     coopDegTotal = 0.0
@@ -153,7 +153,7 @@ function countCoops(over::globalstuff)
     over.meanDegree += degTotal
     over.meanCoopDegree += coopDegTotal
     over.meanDefDegree += defDegTotal
-    #=
+
     distanceTotal = 0.0
     for(i) in 1:over.popSize
         found = false
@@ -412,5 +412,5 @@ for(b) in 0:1:10 #edit here
         popSizeStr = "0" * popSizeStr
     end
     =#
-    save("expDataDegs_CL$(costLink)_B$(benVal).jld2", "parameters", [costLink, benVal], #="meanPN", finalMeanPN, "meanPR", finalMeanPR, =#"meanDegree", finalMeanDegree, "meanDefectorDegree", finalMeanDefDegree, "meanCooperatorDegree", finalMeanCoopDegree#=, "meanDistanceFromDefToCoop", finalMeanDistance, "meanCooperationRatio", finalMeanCoopRatio=#)
+    save("expDataPR_CL$(costLink)_B$(benVal).jld2", "parameters", [costLink, benVal],#= "meanPN", finalMeanPN,=# "meanPR", finalMeanPR#=, "meanDegree", finalMeanDegree, "meanDefectorDegree", finalMeanDefDegree, "meanCooperatorDegree", finalMeanCoopDegree, "meanDistanceFromDefToCoop", finalMeanDistance, "meanCooperationRatio", finalMeanCoopRatio=#)
 end
