@@ -6,7 +6,7 @@ using Plots
 pyplot()
 
 dataTypeList = ["Coop","Degs","PN","PR","Dist"]
-dataMatrix = zeros(Float64, 9, 121)
+dataMatrix = zeros(Float64, 11, 11, 9)
 #[1] = linking cost
 #[2] = benefit value
 #[3] = cooperation ratio
@@ -24,23 +24,23 @@ for (c) in 0:10
             currentDict = load("expData"*dataTypeList[i]*"_CL$(Float64(c)/10.0)_B$(b).0.jld2")
 
             if(i==1)
-                dataMatrix[1][(c*11)+b] = currentDict["parameters"][1]
-                dataMatrix[2][(c*11)+b] = currentDict["parameters"][2]
-                dataMatrix[3][(c*11)+b] = currentDict["meanCooperationRatio"]
+                dataMatrix[c+1, b+1, 1] = currentDict["parameters"][1]
+                dataMatrix[c+1, b+1, 2] = currentDict["parameters"][2]
+                dataMatrix[c+1, b+1, 3] = currentDict["meanCooperationRatio"]
             end
             if(i==2)
-                dataMatrix[4][(c*11)+b] = currentDict["meanDegree"]
-                dataMatrix[5][(c*11)+b] = currentDict["meanCooperatorDegree"]
-                dataMatrix[6][(c*11)+b] = currentDict["meanDefectorDegree"]
+                dataMatrix[c+1, b+1, 4] = currentDict["meanDegree"]
+                dataMatrix[c+1, b+1, 5] = currentDict["meanCooperatorDegree"]
+                dataMatrix[c+1, b+1, 6] = currentDict["meanDefectorDegree"]
             end
             if(i==3)
-                dataMatrix[7][(c*11)+b] = currentDict["meanPN"]
+                dataMatrix[c+1, b+1, 7] = currentDict["meanPN"]
             end
             if(i==4)
-                dataMatrix[8][(c*11)+b] = currentDict["meanPR"]
+                dataMatrix[c+1, b+1, 8] = currentDict["meanPR"]
             end
             if(i==5)
-                dataMatrix[9][(c*11)+b] = currentDict["meanDistanceFromDefToCoop"]
+                dataMatrix[c+1, b+1, 9] = currentDict["meanDistanceFromDefToCoop"]
             end
         end
     end
@@ -49,5 +49,5 @@ end
 xs = [string("cLink ", i) for i = 0.0:0.1:1.0]
 ys = [string("B ", i) for i = 0:10]
 #PN
-z = float(0:1)
+z = dataMatrix[1:11,1:11,3]
 heatmap(xs, ys, z, aspect_ratio = 1)
