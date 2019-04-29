@@ -105,7 +105,7 @@ function degrees(network::NetworkParameters)
             end
         end
         degTotal += degCounter
-        if(network.population[i].strategy == 1)
+        if(network.popStrategies[i] == 1)
             coopDegTotal += degCounter
             cooperatorsPresent += 1
         else
