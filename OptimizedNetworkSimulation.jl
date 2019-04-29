@@ -139,7 +139,7 @@ function distance(network::NetworkParameters)
             if(dC == 1)
                 for(s) in 1:length(usualSuspects)
                     if(usualSuspects[s] != 0)
-                        if(network.popStrategies[usualSuspects[s]] != over.popStrategies[i])
+                        if(network.popStrategies[usualSuspects[s]] != network.popStrategies[i])
                             found = true
                         end
                     end
@@ -148,7 +148,7 @@ function distance(network::NetworkParameters)
                 for(s) in 1:length(usualSuspects)
                     if(usualSuspects[s] != 0)
                         for(ii) in 1:network.popSize
-                            if(over.edgeMatrix[usualSuspects[s], ii] == 1 && !(ii in usualSuspects))
+                            if(network.edgeMatrix[usualSuspects[s], ii] == 1 && !(ii in usualSuspects))
                                 usualSuspects[susCounter] = ii
                                 susCounter += 1
                             end
@@ -176,7 +176,7 @@ end
 
 function findMom(network::NetworkParameters)
     fitSum = sum(network.popFitness)
-    fitnesses = zeros(over.popSize)
+    fitnesses = zeros(network.popSize)
     for(i) in 1:network.popSize
         fitnesses[i] = network.popFitness[i]/fitSum
     end
@@ -306,13 +306,13 @@ function run(CL::Float64, BEN::Float64)
         network.meanCoopRatio /= 80000.0
         network.meanCoopDefDistance /= 80000.0
 
-        dataArray[1] += overlord.meanProbNeighbor
-        dataArray[2] += overlord.meanProbRandom
-        dataArray[3] += overlord.meanDegree
-        dataArray[4] += overlord.meanCoopDegree
-        dataArray[5] += overlord.meanDefDegree
-        dataArray[6] += overlord.meanCoopDefDistance
-        dataArray[7] += overlord.meanCoopRatio
+        dataArray[1] += network.meanProbNeighbor
+        dataArray[2] += network.meanProbRandom
+        dataArray[3] += network.meanDegree
+        dataArray[4] += network.meanCoopDegree
+        dataArray[5] += network.meanDefDegree
+        dataArray[6] += network.meanCoopDefDistance
+        dataArray[7] += network.meanCoopRatio
     end
     dataArray[:] ./= Float64(repSims)
     save("expData_CL$(CL)_B$(BEN).jld2", "parameters", [CL, BEN], "meanPN", dataArray[1], "meanPR", dataArray[2], "meanDegree", dataArray[3], "meanCooperatorDegree", dataArray[4], "meanDefectorDegree", dataArray[5], "meanDistanceFromDefToCoop", dataArray[6], "meanCooperationRatio", dataArray[7])
