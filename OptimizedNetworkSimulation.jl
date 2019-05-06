@@ -3,7 +3,7 @@
 using JLD2
 using ArgParse
 using StatsBase
-#using FileIO
+using FileIO
 #using Plots
 
 mutable struct NetworkParameters
@@ -125,37 +125,40 @@ function distance(network::NetworkParameters)
     for(i) in 1:network.popSize
         found = false
         usualSuspects = zeros(Int64, network.popSize)
-        susCounter = 1
         distCount = 0
         for(ii) in 1:network.popSize
             if(network.edgeMatrix[i, ii] == 1)
-                usualSuspects[susCounter] = ii
-                susCounter += 1
+                usualSuspects[ii] = 1
             end
         end
         while(!found)
             distCount += 1
             dC = distCount
-            if(dC == 1)
-                for(s) in 1:length(usualSuspects)
-                    if(usualSuspects[s] != 0)
-                        if(network.popStrategies[usualSuspects[s]] != network.popStrategies[i])
-                            found = true
-                        end
-                    end
-                end
-            else
-                for(s) in 1:length(usualSuspects)
-                    if(usualSuspects[s] != 0)
-                        for(ii) in 1:network.popSize
-                            if(network.edgeMatrix[usualSuspects[s], ii] == 1 && !(ii in usualSuspects))
-                                usualSuspects[susCounter] = ii
-                                susCounter += 1
+            for(x) in 1:distCount
+                if(dC == 1)
+                    for(s) in 1:network.popSize
+                        if(usualSuspects[s] == 1)
+                            if(network.popStrategies[s] != network.popStrategies[i])
+                                found = true
                             end
                         end
                     end
+                else
+                    for(s) in 1:network.popSize
+                        if(usualSuspects[s] == 1) #bulky
+                            for(ii) in 1:network.popSize
+                                if(network.edgeMatrix[s, ii] == 1)#bulky
+                                    usualSuspects[ii] = 1 #bulky
+                                end
+                            end
+                        end
+                    end
+                    dC -= 1
                 end
-                dC -= 1
+            end
+            if(distCount >= 100 || sum(usualSuspects)==100)
+                found = true
+                distCount = 100
             end
         end
         distanceTotal += distCount
@@ -175,12 +178,7 @@ function death(network::NetworkParameters)
 end
 
 function findMom(network::NetworkParameters)
-    fitSum = sum(network.popFitness)
-    fitnesses = zeros(network.popSize)
-    for(i) in 1:network.popSize
-        fitnesses[i] = network.popFitness[i]/fitSum
-    end
-    fitWeights = weights(Array{Float64, 1}(fitnesses))
+    fitWeights = weights(network.popFitness)
     momIndex = sample(1:network.popSize, fitWeights)
     momIndex
 end
@@ -194,20 +192,22 @@ function birth(network::NetworkParameters, child::Int64, parent::Int64)
     network.popPN[child] = network.popPN[parent]
     if(rand()<network.mu)
         network.popPN[child] += randn()/100
-        if(network.popPN[child] > 1.0)
+        network.popPN[child] = clamp.(network.popPN[child], 0, 1)
+        #=if(network.popPN[child] > 1.0)
             network.popPN[child] = 1.0
         elseif(network.popPN[child] < 0.0)
             network.popPN[child] = 0.0
-        end
+        end=#
     end
     network.popPR[child] = network.popPR[parent]
     if(rand()<network.mu)
         network.popPR[child] += randn()/100
-        if(network.popPR[child] > 1.0)
+        network.popPR[child] = clamp.(network.popPR[child], 0, 1)
+        #=if(network.popPR[child] > 1.0)
             network.popPR[child] = 1.0
         elseif(network.popPR[child] < 0.0)
             network.popPR[child] = 0.0
-        end
+        end=#
     end
     network.edgeMatrix[parent, child] = 1
     network.edgeMatrix[child, parent] = 1
@@ -230,24 +230,24 @@ function birth(network::NetworkParameters, child::Int64, parent::Int64)
 end
 
 function cooperate(network::NetworkParameters)
+    degs = getDegree(network)
     for(i) in 1:network.popSize
         if(network.popStrategies[i] == 1)
-            B = network.benefit/getDegree(network, i)
-            D = network.synergism/getDegree(network, i)
+            B = network.benefit/degs[i]
+            D = network.synergism/degs[i]
 
             for(ii) in 1:network.popSize
                 if(network.edgeMatrix[i, ii] == 1)
                     network.popPayoff[ii] += B
                     if(network.popStrategies[ii] == 1)
-                        network.popPayoff[i] += D/getDegree(network, ii)
-                        network.popPayoff[ii] += D/getDegree(network, ii)
+                        network.popPayoff[ii] += D/degs[ii]
                     end
                 end
             end
 
             network.popPayoff[i] -= network.cost
         end
-        network.popPayoff[i] -= network.linkCost * getDegree(network, i)
+        network.popPayoff[i] -= network.linkCost * degs[i]
     end
 end
 
@@ -258,11 +258,15 @@ function resolveFitnesses(network::NetworkParameters)
     network.popPayoff[:] .= 0.0
 end
 
-function getDegree(network::NetworkParameters, node::Int64)
-    sum(network.edgeMatrix[node, :])
+function getDegree(network::NetworkParameters)
+    degGetter = zeros(100)
+    for(i) in 1:100
+        degGetter[i] = sum(network.edgeMatrix[i, :])
+    end
+    degGetter
 end
 
-function run(CL::Float64, BEN::Float64)
+function runSims(CL::Float64, BEN::Float64)
     #=
     [1]finalMeanPN
     [2]finalMeanPR
@@ -293,7 +297,7 @@ function run(CL::Float64, BEN::Float64)
                 probNeighbor(network)
                 probRandom(network)
                 degrees(network)
-                distance(network)
+                #distance(network)
             end
         end
 
@@ -330,3 +334,13 @@ for(b) in 0:10
     currBenefit = Float64(b)
     run(currCostLink, currBenefit)
 end
+
+
+#=profiling
+using Profile
+#net = NetworkParameters(1.0,0.1)
+Profile.clear()
+runSims(0.1, 1.0)
+@profile runSims(0.1, 1.0)
+Profile.print()
+#runSims(0.1, 1.0)=#
