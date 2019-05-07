@@ -116,8 +116,12 @@ function degrees(network::NetworkParameters)
     defDegTotal /= (network.popSize - cooperatorsPresent)
     coopDegTotal /= cooperatorsPresent
     network.meanDegree += degTotal
-    network.meanCoopDegree += coopDegTotal
-    network.meanDefDegree += defDegTotal
+    if(coopDegTotal == coopDegTotal)
+        network.meanCoopDegree += coopDegTotal
+    end
+    if(defDegTotal == defDegTotal)
+        network.meanDefDegree += defDegTotal
+    end
 end
 
 function distance(network::NetworkParameters)
@@ -158,10 +162,12 @@ function distance(network::NetworkParameters)
             end
             if(distCount >= 100 || sum(usualSuspects)==100)
                 found = true
-                distCount = 100
+                distCount = NaN
             end
         end
-        distanceTotal += distCount
+        if(distCount == distCount)
+            distanceTotal += distCount
+        end
     end
     distanceTotal /= network.popSize
     network.meanCoopDefDistance += distanceTotal
