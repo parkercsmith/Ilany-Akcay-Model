@@ -51,7 +51,7 @@ mutable struct NetworkParameters
         popFitness[:] .= 1.0
 
         edgeMatrix = zeros(Int64, 100, 100)
-        cost = 1.0
+        cost = 0.5
         synergism = 0.0
         benefit = b
         linkCost = cL
@@ -198,7 +198,7 @@ function birth(network::NetworkParameters, child::Int64, parent::Int64)
     network.popPN[child] = network.popPN[parent]
     if(rand()<network.mu)
         network.popPN[child] += randn()/100
-        network.popPN[child] = clamp.(network.popPN[child], 0, 1)
+        network.popPN[child] = clamp(network.popPN[child], 0, 1)
         #=if(network.popPN[child] > 1.0)
             network.popPN[child] = 1.0
         elseif(network.popPN[child] < 0.0)
@@ -208,7 +208,7 @@ function birth(network::NetworkParameters, child::Int64, parent::Int64)
     network.popPR[child] = network.popPR[parent]
     if(rand()<network.mu)
         network.popPR[child] += randn()/100
-        network.popPR[child] = clamp.(network.popPR[child], 0, 1)
+        network.popPR[child] = clamp(network.popPR[child], 0, 1)
         #=if(network.popPR[child] > 1.0)
             network.popPR[child] = 1.0
         elseif(network.popPR[child] < 0.0)
