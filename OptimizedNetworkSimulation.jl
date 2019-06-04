@@ -203,7 +203,7 @@ function birth(network::NetworkParameters, child::Int64, parent::Int64)
         network.popStrategies[child] -= 1
         network.popStrategies[child] *= -1
     end
-    network.popPNI[child] = network.pPNI[parent]
+    network.popPNI[child] = network.popPNI[parent]
     if(rand()<network.mu)
         network.popPNI[child] += randn()/100
         network.popPNI[child] = clamp(network.popPNI[child], 0, 1)
