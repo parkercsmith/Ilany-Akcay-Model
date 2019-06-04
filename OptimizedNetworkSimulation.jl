@@ -322,8 +322,8 @@ function runSims(CL::Float64, BEN::Float64)
         end
 
         #divides meanCooperationRatio by last 400 generations to get a true mean, then outputs
-        network.meanProbNeighborCoop /= 80000.0
-        network.meanProbNeighborDef /= 80000.0
+        network.meanProbNeighborInher /= 80000.0
+        network.meanProbNeighborRand /= 80000.0
         network.meanProbRandom /= 80000.0
         network.meanDegree /= 80000.0
         network.meanCoopDegree /= 80000.0
@@ -331,8 +331,8 @@ function runSims(CL::Float64, BEN::Float64)
         network.meanCoopRatio /= 80000.0
         network.meanCoopDefDistance /= 80000.0
 
-        dataArray[1] += network.meanProbNeighborCoop
-        dataArray[2] += network.meanProbNeighborDef
+        dataArray[1] += network.meanProbNeighborInher
+        dataArray[2] += network.meanProbNeighborRand
         dataArray[3] += network.meanProbRandom
         dataArray[4] += network.meanDegree
         dataArray[5] += network.meanCoopDegree
