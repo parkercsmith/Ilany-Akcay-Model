@@ -10,8 +10,8 @@ mutable struct NetworkParameters
 
     #measurement data
     meanCoopRatio::Float64
-    meanProbNeighborCoop::Float64
-    meanProbNeighborDef::Float64
+    meanProbNeighborInher::Float64
+    meanProbNeighborRand::Float64
     meanProbRandom::Float64
     meanDegree::Float64
     meanCoopDegree::Float64
@@ -19,8 +19,8 @@ mutable struct NetworkParameters
     meanCoopDefDistance::Float64
 
     #Node characteristics
-    popPNC::Array{Float64, 1}
-    popPND::Array{Float64, 1}
+    popPNI::Array{Float64, 1}
+    popPNR::Array{Float64, 1}
     popPR::Array{Float64, 1}
     popStrategies::Array{Int64, 1}
     popPayoff::Array{Float64, 1}
@@ -43,10 +43,10 @@ mutable struct NetworkParameters
 
         numGens = 100000
         popSize = 100
-        popPNC = zeros(Float64, popSize)
-        popPNC[:] .= 0.5
-        popPND = zeros(Float64, popSize)
-        popPND[:] .= 0.5
+        popPNI = zeros(Float64, popSize)
+        popPNI[:] .= 0.5
+        popPNR = zeros(Float64, popSize)
+        popPNR[:] .= 0.5
         popPR = zeros(Float64, popSize)
         popPR[:] .= 0.0001
         popStrategies = zeros(Int64, popSize)
@@ -62,7 +62,7 @@ mutable struct NetworkParameters
         mu = .01
         delta = 0.5
 
-        new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, popPNC, popPND, popPR, popStrategies, zeros(Float64, popSize), popFitness, numGens, popSize, edgeMatrix, cost, benefit, synergism, linkCost, mu, delta)
+        new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, popPNI, popPNR, popPR, popStrategies, zeros(Float64, popSize), popFitness, numGens, popSize, edgeMatrix, cost, benefit, synergism, linkCost, mu, delta)
     end
 end
 
@@ -79,16 +79,16 @@ function coopRatio(network::NetworkParameters)
 end
 
 function probNeighbor(network::NetworkParameters)
-    pNCTotal = 0.0
-    pNDTotal = 0.0
+    pNITotal = 0.0
+    pNRTotal = 0.0
     for(i) in 1:network.popSize
-        pNCTotal += network.popPNC[i]
-        pNDTotal += network.popPND[i]
+        pNITotal += network.popPNI[i]
+        pNRTotal += network.popPNR[i]
     end
-    pNCTotal /= network.popSize
-    pNDTotal /= network.popSize
-    network.meanProbNeighborCoop += pNCTotal
-    network.meanProbNeighborDef += pNDTotal
+    pNITotal /= network.popSize
+    pNRTotal /= network.popSize
+    network.meanProbNeighborInher += pNITotal
+    network.meanProbNeighborRand += pNRTotal
 end
 
 function probRandom(network::NetworkParameters)
@@ -108,7 +108,7 @@ function degrees(network::NetworkParameters)
     for(i) in 1:network.popSize
         degCounter = 0
         for(ii) in 1:network.popSize
-            if(network.edgeMatrix[i, ii] == 1)
+            if(network.edgeMatrix[i, ii] != 0)
                 degCounter += 1
             end
         end
@@ -139,7 +139,7 @@ function distance(network::NetworkParameters)
         usualSuspects = zeros(Int64, network.popSize)
         distCount = 0
         for(ii) in 1:network.popSize
-            if(network.edgeMatrix[i, ii] == 1)
+            if(network.edgeMatrix[i, ii] != 0)
                 usualSuspects[ii] = 1
             end
         end
@@ -159,7 +159,7 @@ function distance(network::NetworkParameters)
                     for(s) in 1:network.popSize
                         if(usualSuspects[s] == 1) #bulky
                             for(ii) in 1:network.popSize
-                                if(network.edgeMatrix[s, ii] == 1)#bulky
+                                if(network.edgeMatrix[s, ii] != 0)#bulky
                                     usualSuspects[ii] = 1 #bulky
                                 end
                             end
@@ -203,15 +203,15 @@ function birth(network::NetworkParameters, child::Int64, parent::Int64)
         network.popStrategies[child] -= 1
         network.popStrategies[child] *= -1
     end
-    network.popPNC[child] = network.popPNC[parent]
+    network.popPNI[child] = network.pPNI[parent]
     if(rand()<network.mu)
-        network.popPNC[child] += randn()/100
-        network.popPNC[child] = clamp(network.popPNC[child], 0, 1)
+        network.popPNI[child] += randn()/100
+        network.popPNI[child] = clamp(network.popPNI[child], 0, 1)
     end
-    network.popPND[child] = network.popPND[parent]
+    network.popPNR[child] = network.popPNR[parent]
     if(rand()<network.mu)
-        network.popPND[child] += randn()/100
-        network.popPND[child] = clamp(network.popPND[child], 0, 1)
+        network.popPNR[child] += randn()/100
+        network.popPNR[child] = clamp(network.popPNR[child], 0, 1)
     end
     network.popPR[child] = network.popPR[parent]
     if(rand()<network.mu)
@@ -223,22 +223,22 @@ function birth(network::NetworkParameters, child::Int64, parent::Int64)
 
     for(i) in 1:network.popSize
         if(i != child && network.edgeMatrix[i, child] == 0)
-            if(network.edgeMatrix[i, parent] == 1)
-                if(network.popStrategies[i] == 1)
-                    if(rand() < network.popPNC[child])
+            if(network.edgeMatrix[i, parent] != 0)
+                if(network.edgeMatrix[i, parent] == 1)
+                    if(rand() < network.popPNI[child])
                         network.edgeMatrix[i, child] = 1
                         network.edgeMatrix[child, i] = 1
                     end
                 else
-                    if(rand() < network.popPND[child])
+                    if(rand() < network.popPNR[child])
                         network.edgeMatrix[i, child] = 1
                         network.edgeMatrix[child, i] = 1
                     end
                 end
             else
                 if(rand() < network.popPR[child])
-                    network.edgeMatrix[i, child] = 1
-                    network.edgeMatrix[child, i] = 1
+                    network.edgeMatrix[i, child] = 2
+                    network.edgeMatrix[child, i] = 2
                 end
             end
         end
@@ -253,7 +253,7 @@ function cooperate(network::NetworkParameters)
             D = network.synergism/degs[i]
 
             for(ii) in 1:network.popSize
-                if(network.edgeMatrix[i, ii] == 1)
+                if(network.edgeMatrix[i, ii] != 0)
                     network.popPayoff[ii] += B
                     if(network.popStrategies[ii] == 1)
                         network.popPayoff[ii] += D/degs[ii]
@@ -274,10 +274,14 @@ function resolveFitnesses(network::NetworkParameters)
     network.popPayoff[:] .= 0.0
 end
 
-function getDegree(network::NetworkParameters)
+function getDegree(network::NetworkParameters) #made less efficient by 2 in edgeMatrix; can use sum for 1/0 vals
     degGetter = zeros(100)
     for(i) in 1:100
-        degGetter[i] = sum(network.edgeMatrix[i, :])
+        for(ii) in 1:100
+            if(network.edgeMatrix[i,ii] != 0)
+                degGetter[i] += 1
+            end
+        end
     end
     degGetter
 end
@@ -337,7 +341,7 @@ function runSims(CL::Float64, BEN::Float64)
         dataArray[8] += network.meanCoopRatio
     end
     dataArray[:] ./= Float64(repSims)
-    save("expData_CL$(CL)_B$(BEN).jld2", "parameters", [CL, BEN], "meanPNC", dataArray[1], "meanPND", dataArray[2], "meanPR", dataArray[3], "meanDegree", dataArray[4], "meanCooperatorDegree", dataArray[5], "meanDefectorDegree", dataArray[6], "meanDistanceFromDefToCoop", dataArray[7], "meanCooperationRatio", dataArray[8])
+    save("expData_CL$(CL)_B$(BEN).jld2", "parameters", [CL, BEN], "meanPNI", dataArray[1], "meanPNR", dataArray[2], "meanPR", dataArray[3], "meanDegree", dataArray[4], "meanCooperatorDegree", dataArray[5], "meanDefectorDegree", dataArray[6], "meanDistanceFromDefToCoop", dataArray[7], "meanCooperationRatio", dataArray[8])
 end
 
 argTab = ArgParseSettings(description = "arguments and stuff, don't worry about it")
