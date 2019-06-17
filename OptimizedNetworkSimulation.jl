@@ -352,7 +352,7 @@ argTab = ArgParseSettings(description = "arguments and stuff, don't worry about 
 end
 parsedArgs = parse_args(ARGS, argTab)
 currCostLink = parsedArgs["cLink"]
-for(b) in 0:10
+for(b) in 1:10
     currBenefit = Float64(b)
     runSims(currCostLink, currBenefit)
 end
