@@ -315,7 +315,7 @@ function runSims(CL::Float64, BEN::Float64)
             if(g > (network.numGens * network.popSize / 5) && (g % network.popSize) == 0)
                 #coopRatio(network)
                 probNeighbor(network)
-                #probRandom(network)
+                probRandom(network)
                 #degrees(network)
                 #distance(network)
             end
