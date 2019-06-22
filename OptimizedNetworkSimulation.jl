@@ -309,7 +309,9 @@ function runSims(CL::Float64, BEN::Float64)
             childID = death(network)
             parentID = findMom(network)
             birth(network, childID, parentID)
-            cooperate(network)
+            if(g > (network.numGens * network.popSize / 5))
+                cooperate(network)
+            end
             resolveFitnesses(network)
 
             if(g > (network.numGens * network.popSize / 5) && (g % network.popSize) == 0)
