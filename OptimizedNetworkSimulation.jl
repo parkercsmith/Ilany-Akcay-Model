@@ -79,15 +79,15 @@ function coopRatio(network::NetworkParameters)
 end
 
 function probNeighbor(network::NetworkParameters)
-    pNCTotal = 0.0
+    #pNCTotal = 0.0
     pNDTotal = 0.0
     for(i) in 1:network.popSize
-        pNCTotal += network.popPNC[i]
+        #pNCTotal += network.popPNC[i]
         pNDTotal += network.popPND[i]
     end
-    pNCTotal /= network.popSize
+    #pNCTotal /= network.popSize
     pNDTotal /= network.popSize
-    network.meanProbNeighborCoop += pNCTotal
+    #network.meanProbNeighborCoop += pNCTotal
     network.meanProbNeighborDef += pNDTotal
 end
 
