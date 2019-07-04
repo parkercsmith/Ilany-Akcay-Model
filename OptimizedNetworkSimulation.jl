@@ -156,6 +156,7 @@ function distance(network::NetworkParameters)
                         end
                     end
                 else
+                    oldSuspects = copy(usualSuspects)
                     for(s) in 1:network.popSize
                         if(usualSuspects[s] == 1) #bulky
                             for(ii) in 1:network.popSize
@@ -164,6 +165,11 @@ function distance(network::NetworkParameters)
                                 end
                             end
                         end
+                    end
+                    if(oldSuspects == usualSuspects)
+                        found = true
+                        distCount = NaN
+                        break
                     end
                     dC -= 1
                 end
