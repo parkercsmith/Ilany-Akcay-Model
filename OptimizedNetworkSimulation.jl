@@ -282,7 +282,9 @@ function getDegree(network::NetworkParameters) #made less efficient by 2 in edge
                 degGetter[i] += 1
             end
         end
+        #degGetter[i] = sum(edgeMatrix[i,:])
     end
+
     degGetter
 end
 
@@ -315,11 +317,11 @@ function runSims(CL::Float64, BEN::Float64)
             resolveFitnesses(network)
 
             if(g > (network.numGens * network.popSize / 5) && (g % network.popSize) == 0)
-                coopRatio(network)
+                #coopRatio(network)
                 #probNeighbor(network)
                 #probRandom(network)
-                degrees(network)
-                #distance(network)
+                #degrees(network)
+                distance(network)
             end
         end
 
