@@ -79,15 +79,15 @@ function coopRatio(network::NetworkParameters)
 end
 
 function probNeighbor(network::NetworkParameters)
-    #pNCTotal = 0.0
+    pNCTotal = 0.0
     pNDTotal = 0.0
     for(i) in 1:network.popSize
-        #pNCTotal += network.popPNC[i]
+        pNCTotal += network.popPNC[i]
         pNDTotal += network.popPND[i]
     end
-    #pNCTotal /= network.popSize
+    pNCTotal /= network.popSize
     pNDTotal /= network.popSize
-    #network.meanProbNeighborCoop += pNCTotal
+    network.meanProbNeighborCoop += pNCTotal
     network.meanProbNeighborDef += pNDTotal
 end
 
@@ -351,7 +351,7 @@ function runSims(CL::Float64, BEN::Float64)
         dataArray[8] += network.meanCoopRatio
     end
     dataArray[:] ./= Float64(repSims)
-    save("expData_CL$(CL)_B$(BEN).jld2", "parameters", [CL, BEN], "meanPNC", dataArray[1], "meanPND", dataArray[2], "meanPR", dataArray[3], "meanDegree", dataArray[4], "meanCooperatorDegree", dataArray[5], "meanDefectorDegree", dataArray[6], "meanDistanceFromDefToCoop", dataArray[7], "meanCooperationRatio", dataArray[8])
+    save("CDData_CL$(CL)_B$(BEN).jld2", "parameters", [CL, BEN], "meanPNC", dataArray[1], "meanPND", dataArray[2], "meanPR", dataArray[3], "meanDegree", dataArray[4], "meanCooperatorDegree", dataArray[5], "meanDefectorDegree", dataArray[6], "meanDistanceFromDefToCoop", dataArray[7], "meanCooperationRatio", dataArray[8])
 end
 
 argTab = ArgParseSettings(description = "arguments and stuff, don't worry about it")
