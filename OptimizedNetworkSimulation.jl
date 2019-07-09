@@ -62,7 +62,7 @@ mutable struct NetworkParameters
         mu = .01
         delta = 0.5
 
-        new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, popPNI,#= popPN_,=# popPR, popStrategies, zeros(Float64, popSize), popFitness, numGens, popSize, edgeMatrix, cost, benefit, synergism, linkCost, mu, delta)
+        new(0.0, 0.0, 0.0,#= 0.0,=# 0.0, 0.0, 0.0, 0.0, popPN,#= popPN_,=# popPR, popStrategies, zeros(Float64, popSize), popFitness, numGens, popSize, edgeMatrix, cost, benefit, synergism, linkCost, mu, delta)
     end
 end
 
