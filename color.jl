@@ -4,6 +4,10 @@ sunsetcolors = cgrad([RGB{Float64}(0., 0., 0.), RGB{Float64}( 0.02236758, 0.0081
 
 # default colormap
 heatmap([i*j for i=1:100,j=1:100], c=:inferno, aspect_ratio=1)
+# with limits on the values to plot
+heatmap([i*j for i=1:100,j=1:100], c=:inferno, clim=(2000, 8000), aspect_ratio=1)
 
 # the "sunsetcolors" colormap tha Akcay used
 heatmap([i*j for i=1:100,j=1:100], c=sunsetcolors, aspect_ratio=1)
+# with limits on the values to plot
+heatmap([i*j for i=1:100,j=1:100], c=sunsetcolors, clim=(2000, 8000), aspect_ratio=1)
