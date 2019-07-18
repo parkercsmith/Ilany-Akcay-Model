@@ -10,8 +10,8 @@ mutable struct NetworkParameters
 
     #measurement data
     meanCoopRatio::Float64
-    meanProbNeighbor::Float64
-    #meanProbNeighbor____::Float64
+    meanProbNeighborCoop::Float64
+    meanProbNeighborDef::Float64
     meanProbRandom::Float64
     meanDegree::Float64
     meanCoopDegree::Float64
@@ -19,8 +19,8 @@ mutable struct NetworkParameters
     meanCoopDefDistance::Float64
 
     #Node characteristics
-    popPN::Array{Float64, 1}
-    #popPN_::Array{Float64, 1}
+    popPNC::Array{Float64, 1}
+    popPND::Array{Float64, 1}
     popPR::Array{Float64, 1}
     popStrategies::Array{Int64, 1}
     popPayoff::Array{Float64, 1}
@@ -43,10 +43,10 @@ mutable struct NetworkParameters
 
         numGens = 100000
         popSize = 100
-        popPN = zeros(Float64, popSize)
-        popPN[:] .= 0.5
-        #popPN_ = zeros(Float64, popSize)
-        #popPN_[:] .= 0.5
+        popPNC = zeros(Float64, popSize)
+        popPNC[:] .= 0.5
+        popPND = zeros(Float64, popSize)
+        popPND[:] .= 0.5
         popPR = zeros(Float64, popSize)
         popPR[:] .= 0.0001
         popStrategies = zeros(Int64, popSize)
@@ -62,7 +62,7 @@ mutable struct NetworkParameters
         mu = .01
         delta = 0.5
 
-        new(0.0, 0.0, 0.0,#= 0.0,=# 0.0, 0.0, 0.0, 0.0, popPN,#= popPN_,=# popPR, popStrategies, zeros(Float64, popSize), popFitness, numGens, popSize, edgeMatrix, cost, benefit, synergism, linkCost, mu, delta)
+        new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, popPNC, popPND, popPR, popStrategies, zeros(Float64, popSize), popFitness, numGens, popSize, edgeMatrix, cost, benefit, synergism, linkCost, mu, delta)
     end
 end
 
@@ -79,16 +79,16 @@ function coopRatio(network::NetworkParameters)
 end
 
 function probNeighbor(network::NetworkParameters)
-    pNTotal = 0.0
-    #pN_Total = 0.0
+    pNCTotal = 0.0
+    pNDTotal = 0.0
     for(i) in 1:network.popSize
-        pNTotal += network.popPN[i]
-        #pN_Total += network.popPN_[i]
+        pNCTotal += network.popPNC[i]
+        pNDTotal += network.popPND[i]
     end
-    pNTotal /= network.popSize
-    #pN_Total /= network.popSize
-    network.meanProbNeighbor += pNTotal
-    #network.meanProbNeighbor____ += pN_Total
+    pNCTotal /= network.popSize
+    pNDTotal /= network.popSize
+    network.meanProbNeighborCoop += pNCTotal
+    network.meanProbNeighborDef += pNDTotal
 end
 
 function probRandom(network::NetworkParameters)
@@ -209,16 +209,16 @@ function birth(network::NetworkParameters, child::Int64, parent::Int64)
         network.popStrategies[child] -= 1
         network.popStrategies[child] *= -1
     end
-    network.popPN[child] = network.popPN[parent]
+    network.popPNC[child] = network.popPNC[parent]
     if(rand()<network.mu)
-        network.popPN[child] += randn()/100
-        network.popPN[child] = clamp(network.popPN[child], 0, 1)
+        network.popPNC[child] += randn()/100
+        network.popPNC[child] = clamp(network.popPNC[child], 0, 1)
     end
-    #=network.popPN_[child] = network.popPN_[parent]
+    network.popPND[child] = network.popPND[parent]
     if(rand()<network.mu)
-        network.popPN_[child] += randn()/100
-        network.popPN_[child] = clamp(network.popPN_[child], 0, 1)
-    end=#
+        network.popPND[child] += randn()/100
+        network.popPND[child] = clamp(network.popPND[child], 0, 1)
+    end
     network.popPR[child] = network.popPR[parent]
     if(rand()<network.mu)
         network.popPR[child] += randn()/100
@@ -230,17 +230,17 @@ function birth(network::NetworkParameters, child::Int64, parent::Int64)
     for(i) in 1:network.popSize
         if(i != child && network.edgeMatrix[i, child] == 0)
             if(network.edgeMatrix[i, parent] != 0)
-                #if(network.edgeMatrix[i, parent] == 1)
-                    if(rand() < network.popPN[child])
+                if(network.popStrategies[i] == 1)
+                    if(rand() < network.popPNC[child])
                         network.edgeMatrix[i, child] = 1
                         network.edgeMatrix[child, i] = 1
                     end
-                #=else
-                    if(rand() < network.popPNR[child])
+                else
+                    if(rand() < network.popPND[child])
                         network.edgeMatrix[i, child] = 1
                         network.edgeMatrix[child, i] = 1
                     end
-                end=#
+                end
             else
                 if(rand() < network.popPR[child])
                     network.edgeMatrix[i, child] = 2
@@ -332,8 +332,8 @@ function runSims(CL::Float64, BEN::Float64)
         end
 
         #divides meanCooperationRatio by last 400 generations to get a true mean, then outputs
-        network.meanProbNeighbor /= 80000.0
-        #network.meanProbNeighbor____ /= 80000.0
+        network.meanProbNeighborCoop /= 80000.0
+        network.meanProbNeighborDef /= 80000.0
         network.meanProbRandom /= 80000.0
         network.meanDegree /= 80000.0
         network.meanCoopDegree /= 80000.0
@@ -341,8 +341,8 @@ function runSims(CL::Float64, BEN::Float64)
         network.meanCoopRatio /= 80000.0
         network.meanCoopDefDistance /= 80000.0
 
-        dataArray[1] += network.meanProbNeighbor
-        #dataArray[2] += network.meanProbNeighbor____
+        dataArray[1] += network.meanProbNeighborCoop
+        dataArray[2] += network.meanProbNeighborDef
         dataArray[3] += network.meanProbRandom
         dataArray[4] += network.meanDegree
         dataArray[5] += network.meanCoopDegree
@@ -351,7 +351,7 @@ function runSims(CL::Float64, BEN::Float64)
         dataArray[8] += network.meanCoopRatio
     end
     dataArray[:] ./= Float64(repSims)
-    save("baseData_CL$(CL)_B$(BEN).jld2", "parameters", [CL, BEN], "meanPN", dataArray[1],#= "meanPN_", dataArray[2],=# "meanPR", dataArray[3], "meanDegree", dataArray[4], "meanCooperatorDegree", dataArray[5], "meanDefectorDegree", dataArray[6], "meanDistanceFromDefToCoop", dataArray[7], "meanCooperationRatio", dataArray[8])
+    save("baseData_CL$(CL)_B$(BEN).jld2", "parameters", [CL, BEN], "meanPNC", dataArray[1], "meanPND", dataArray[2], "meanPR", dataArray[3], "meanDegree", dataArray[4], "meanCooperatorDegree", dataArray[5], "meanDefectorDegree", dataArray[6], "meanDistanceFromDefToCoop", dataArray[7], "meanCooperationRatio", dataArray[8])
 end
 
 argTab = ArgParseSettings(description = "arguments and stuff, don't worry about it")
