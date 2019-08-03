@@ -185,9 +185,12 @@ function death(network::NetworkParameters)
     deadID
 end
 
-function findMom(network::NetworkParameters)
+function findMom(network::NetworkParameters, kID::Int64)
     fitWeights = weights(network.popFitness)
-    momIndex = sample(1:network.popSize, fitWeights)
+    momIndex = kID
+    while(momIndex = kID)
+        momIndex = sample(1:network.popSize, fitWeights)
+    end
     momIndex
 end
 
@@ -294,7 +297,7 @@ function runSims(CL::Float64, BEN::Float64)
         for(g) in 1:(network.numGens * network.popSize)
 
             childID = death(network)
-            parentID = findMom(network)
+            parentID = findMom(network, childID)
             birth(network, childID, parentID)
             if(g > (network.numGens * network.popSize / 5))
                 cooperate(network)
