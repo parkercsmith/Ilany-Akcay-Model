@@ -17,6 +17,7 @@ mutable struct NetworkParameters
     meanCoopDegree::Float64
     meanDefDegree::Float64
     meanCoopDefDistance::Float64
+    meanDistInclusion::Float64
 
     #Node characteristics
     popPNC::Array{Float64, 1}
@@ -62,7 +63,7 @@ mutable struct NetworkParameters
         mu = .01
         delta = 0.5
 
-        new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, popPNC, popPND, popPR, popStrategies, zeros(Float64, popSize), popFitness, numGens, popSize, edgeMatrix, cost, benefit, synergism, linkCost, mu, delta)
+        new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, popPNC, popPND, popPR, popStrategies, zeros(Float64, popSize), popFitness, numGens, popSize, edgeMatrix, cost, benefit, synergism, linkCost, mu, delta)
     end
 end
 
@@ -134,57 +135,44 @@ end
 
 function distance(network::NetworkParameters)
     distanceTotal = 0.0
+    included = network.popSize
     for(i) in 1:network.popSize
         found = false
         usualSuspects = zeros(Int64, network.popSize)
+        oldSuspects = zeros(Int64, network.popSize)
         distCount = 0
-        for(ii) in 1:network.popSize
-            if(network.edgeMatrix[i, ii] != 0)
-                usualSuspects[ii] = 1
-            end
-        end
+        usualSuspects[i] = 1
         while(!found)
             distCount += 1
-            dC = distCount
-            for(x) in 1:distCount
-                if(dC == 1)
-                    for(s) in 1:network.popSize
-                        if(usualSuspects[s] == 1)
-                            if(network.popStrategies[s] != network.popStrategies[i])
-                                found = true
-                            end
+            oldSuspects .= usualSuspects
+            for(s) in 1:network.popSize
+                if(oldSuspects[s] == 1)
+                    for(ii) in 1:network.popSize
+                        if(network.edgeMatrix[s, ii] != 0)
+                            usualSuspects[ii] = 1
                         end
                     end
-                else
-                    oldSuspects = copy(usualSuspects)
-                    for(s) in 1:network.popSize
-                        if(usualSuspects[s] == 1) #bulky
-                            for(ii) in 1:network.popSize
-                                if(network.edgeMatrix[s, ii] != 0)#bulky
-                                    usualSuspects[ii] = 1 #bulky
-                                end
-                            end
-                        end
-                    end
-                    if(oldSuspects == usualSuspects)
-                        found = true
-                        distCount = NaN
-                        break
-                    end
-                    dC -= 1
                 end
             end
-            if(distCount >= 100 || sum(usualSuspects)==100)
+            if(oldSuspects == usualSuspects)
                 found = true
                 distCount = NaN
+                included -= 1
+            else
+                for(ii) in 1:network.popSize
+                    if(usualSuspects[ii] == 1 && network.popStrategies[ii]!=network.popStrategies[i])
+                        found = true
+                    end
+                end
             end
         end
         if(distCount == distCount)
             distanceTotal += distCount
         end
     end
-    distanceTotal /= network.popSize
+    distanceTotal /= included
     network.meanCoopDefDistance += distanceTotal
+    network.meanDistInclusion += included/network.popSize
 end
 
 #evolution functions
@@ -295,16 +283,7 @@ function getDegree(network::NetworkParameters) #made less efficient by 2 in edge
 end
 
 function runSims(CL::Float64, BEN::Float64)
-    #=
-    [1]finalMeanPN
-    [2]finalMeanPR
-    [3]finalMeanDegree
-    [4]finalMeanCoopDegree
-    [5]finalMeanDefDegree
-    [6]finalMeanDistance
-    [7]finalMeanCoopRatio
-    =#
-    dataArray = zeros(8)
+    dataArray = zeros(9)
     repSims = 10
     for(x) in 1:repSims
 
@@ -323,10 +302,10 @@ function runSims(CL::Float64, BEN::Float64)
             resolveFitnesses(network)
 
             if(g > (network.numGens * network.popSize / 5) && (g % network.popSize) == 0)
-                coopRatio(network)
-                probNeighbor(network)
-                probRandom(network)
-                degrees(network)
+                #coopRatio(network)
+                #probNeighbor(network)
+                #probRandom(network)
+                #degrees(network)
                 distance(network)
             end
         end
@@ -340,6 +319,7 @@ function runSims(CL::Float64, BEN::Float64)
         network.meanDefDegree /= 80000.0
         network.meanCoopRatio /= 80000.0
         network.meanCoopDefDistance /= 80000.0
+        network.meanDistInclusion /= 80000.0
 
         dataArray[1] += network.meanProbNeighborCoop
         dataArray[2] += network.meanProbNeighborDef
@@ -348,10 +328,11 @@ function runSims(CL::Float64, BEN::Float64)
         dataArray[5] += network.meanCoopDegree
         dataArray[6] += network.meanDefDegree
         dataArray[7] += network.meanCoopDefDistance
-        dataArray[8] += network.meanCoopRatio
+        dataArray[8] += network.meanDistInclusion
+        dataArray[9] += network.meanCoopRatio
     end
     dataArray[:] ./= Float64(repSims)
-    save("highcostData_CL$(CL)_B$(BEN).jld2", "parameters", [CL, BEN], "meanPNC", dataArray[1], "meanPND", dataArray[2], "meanPR", dataArray[3], "meanDegree", dataArray[4], "meanCooperatorDegree", dataArray[5], "meanDefectorDegree", dataArray[6], "meanDistanceFromDefToCoop", dataArray[7], "meanCooperationRatio", dataArray[8])
+    save("distTestData_CL$(CL)_B$(BEN).jld2", "parameters", [CL, BEN], "meanPNC", dataArray[1], "meanPND", dataArray[2], "meanPR", dataArray[3], "meanDegree", dataArray[4], "meanCooperatorDegree", dataArray[5], "meanDefectorDegree", dataArray[6], "meanDistanceFromDefToCoop", dataArray[7], "meanDistanceInclusion", dataArray[8], "meanCooperationRatio", dataArray[9])
 end
 
 argTab = ArgParseSettings(description = "arguments and stuff, don't worry about it")
