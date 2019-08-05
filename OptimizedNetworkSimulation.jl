@@ -170,7 +170,9 @@ function distance(network::NetworkParameters)
             distanceTotal += distCount
         end
     end
-    distanceTotal /= included
+    if(included!=0)
+        distanceTotal /= included
+    end
     network.meanCoopDefDistance += distanceTotal
     network.meanDistInclusion += included/network.popSize
 end
