@@ -190,7 +190,7 @@ end
 function findMom(network::NetworkParameters, kID::Int64)
     fitWeights = weights(network.popFitness)
     momIndex = kID
-    while(momIndex = kID)
+    while(momIndex == kID)
         momIndex = sample(1:network.popSize, fitWeights)
     end
     momIndex
