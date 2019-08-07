@@ -21,7 +21,7 @@ mutable struct NetworkParameters
 
     #Node characteristics
     popPNC::Array{Float64, 1}
-    popPND::Array{Float64, 1}
+    #popPND::Array{Float64, 1}
     popPR::Array{Float64, 1}
     popStrategies::Array{Int64, 1}
     popPayoff::Array{Float64, 1}
@@ -46,8 +46,8 @@ mutable struct NetworkParameters
         popSize = 100
         popPNC = zeros(Float64, popSize)
         popPNC[:] .= 0.5
-        popPND = zeros(Float64, popSize)
-        popPND[:] .= 0.5
+        #popPND = zeros(Float64, popSize)
+        #popPND[:] .= 0.5
         popPR = zeros(Float64, popSize)
         popPR[:] .= 0.0001
         popStrategies = zeros(Int64, popSize)
@@ -63,7 +63,7 @@ mutable struct NetworkParameters
         mu = .01
         delta = 0.5
 
-        new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, popPNC, popPND, popPR, popStrategies, zeros(Float64, popSize), popFitness, numGens, popSize, edgeMatrix, cost, benefit, synergism, linkCost, mu, delta)
+        new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, popPNC, #=popPND,=# popPR, popStrategies, zeros(Float64, popSize), popFitness, numGens, popSize, edgeMatrix, cost, benefit, synergism, linkCost, mu, delta)
     end
 end
 
@@ -81,15 +81,15 @@ end
 
 function probNeighbor(network::NetworkParameters)
     pNCTotal = 0.0
-    pNDTotal = 0.0
+    #pNDTotal = 0.0
     for(i) in 1:network.popSize
         pNCTotal += network.popPNC[i]
-        pNDTotal += network.popPND[i]
+        #pNDTotal += network.popPND[i]
     end
     pNCTotal /= network.popSize
-    pNDTotal /= network.popSize
+    #pNDTotal /= network.popSize
     network.meanProbNeighborCoop += pNCTotal
-    network.meanProbNeighborDef += pNDTotal
+    #network.meanProbNeighborDef += pNDTotal
 end
 
 function probRandom(network::NetworkParameters)
@@ -207,11 +207,13 @@ function birth(network::NetworkParameters, child::Int64, parent::Int64)
         network.popPNC[child] += randn()/100
         network.popPNC[child] = clamp(network.popPNC[child], 0, 1)
     end
+    #=
     network.popPND[child] = network.popPND[parent]
     if(rand()<network.mu)
         network.popPND[child] += randn()/100
         network.popPND[child] = clamp(network.popPND[child], 0, 1)
     end
+    =#
     network.popPR[child] = network.popPR[parent]
     if(rand()<network.mu)
         network.popPR[child] += randn()/100
@@ -223,17 +225,18 @@ function birth(network::NetworkParameters, child::Int64, parent::Int64)
     for(i) in 1:network.popSize
         if(i != child && network.edgeMatrix[i, child] == 0)
             if(network.edgeMatrix[i, parent] != 0)
-                if(network.popStrategies[i] == 1)
+                #if(network.popStrategies[i] == 1)
                     if(rand() < network.popPNC[child])
                         network.edgeMatrix[i, child] = 1
                         network.edgeMatrix[child, i] = 1
                     end
-                else
+                #=else
                     if(rand() < network.popPND[child])
                         network.edgeMatrix[i, child] = 1
                         network.edgeMatrix[child, i] = 1
                     end
                 end
+                =#
             else
                 if(rand() < network.popPR[child])
                     network.edgeMatrix[i, child] = 2
@@ -307,10 +310,10 @@ function runSims(CL::Float64, BEN::Float64)
             resolveFitnesses(network)
 
             if(g > (network.numGens * network.popSize / 5) && (g % network.popSize) == 0)
-                #coopRatio(network)
-                #probNeighbor(network)
-                #probRandom(network)
-                #degrees(network)
+                coopRatio(network)
+                probNeighbor(network)
+                probRandom(network)
+                degrees(network)
                 distance(network)
             end
         end
@@ -337,7 +340,7 @@ function runSims(CL::Float64, BEN::Float64)
         dataArray[9] += network.meanCoopRatio
     end
     dataArray[:] ./= Float64(repSims)
-    save("distTestData_CL$(CL)_B$(BEN).jld2", "parameters", [CL, BEN], "meanPNC", dataArray[1], "meanPND", dataArray[2], "meanPR", dataArray[3], "meanDegree", dataArray[4], "meanCooperatorDegree", dataArray[5], "meanDefectorDegree", dataArray[6], "meanDistanceFromDefToCoop", dataArray[7], "meanDistanceInclusion", dataArray[8], "meanCooperationRatio", dataArray[9])
+    save("akcayCoopData_CL$(CL)_B$(BEN).jld2", "parameters", [CL, BEN], "meanPNC", dataArray[1], "meanPND", dataArray[2], "meanPR", dataArray[3], "meanDegree", dataArray[4], "meanCooperatorDegree", dataArray[5], "meanDefectorDegree", dataArray[6], "meanDistanceFromDefToCoop", dataArray[7], "meanDistanceInclusion", dataArray[8], "meanCooperationRatio", dataArray[9])
 end
 
 argTab = ArgParseSettings(description = "arguments and stuff, don't worry about it")
