@@ -49,7 +49,7 @@ mutable struct NetworkParameters
         #popPND = zeros(Float64, popSize)
         #popPND[:] .= 0.5
         popPR = zeros(Float64, popSize)
-        popPR[:] .= 0.0001
+        popPR[:] .= 0.00 #FIXED PR
         popStrategies = zeros(Int64, popSize)
         popStrategies[2:2:popSize] .= 1
         popFitness = zeros(Float64, popSize)
@@ -215,10 +215,11 @@ function birth(network::NetworkParameters, child::Int64, parent::Int64)
     end
     =#
     network.popPR[child] = network.popPR[parent]
-    if(rand()<network.mu)
-        network.popPR[child] += randn()/100
-        network.popPR[child] = clamp(network.popPR[child], 0, 1)
-    end
+    #if(rand()<network.mu)
+    #    network.popPR[child] += randn()/100
+    #    network.popPR[child] = clamp(network.popPR[child], 0, 1)
+    #end
+    #FIXED PR
     network.edgeMatrix[parent, child] = 1
     network.edgeMatrix[child, parent] = 1
 
@@ -311,10 +312,10 @@ function runSims(CL::Float64, BEN::Float64)
 
             if(g > (network.numGens * network.popSize / 5) && (g % network.popSize) == 0)
                 coopRatio(network)
-                probNeighbor(network)
+                #probNeighbor(network)
                 probRandom(network)
-                degrees(network)
-                distance(network)
+                #degrees(network)
+                #distance(network)
             end
         end
 
@@ -351,7 +352,7 @@ argTab = ArgParseSettings(description = "arguments and stuff, don't worry about 
 end
 parsedArgs = parse_args(ARGS, argTab)
 currCostLink = parsedArgs["cLink"]
-for(b) in 2:10
+for(b) in 3:3
     currBenefit = Float64(b)
     runSims(currCostLink, currBenefit)
 end
