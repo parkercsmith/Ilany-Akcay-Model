@@ -45,7 +45,7 @@ mutable struct NetworkParameters
         numGens = 100000
         popSize = 100
         popPNC = zeros(Float64, popSize)
-        popPNC[:] .= 0.5
+        popPNC[:] .= 0.1
         #popPND = zeros(Float64, popSize)
         #popPND[:] .= 0.5
         popPR = zeros(Float64, popSize)
