@@ -98,7 +98,8 @@ function probRandom(network::NetworkParameters)
         pRTotal += network.popPR[i]
     end
     pRTotal /= network.popSize
-    network.meanProbRandom += pRTotal
+    network.meanProbRandom += network.popPR[1] #pRTotal
+    #FIXED PR
 end
 
 function degrees(network::NetworkParameters)
@@ -344,7 +345,7 @@ function runSims(CL::Float64, BEN::Float64)
         dataArray[9] += network.meanCoopRatio
     end
     dataArray[:] ./= Float64(repSims)
-    save("FixedCoopData_CL$(CL)_PR$(dataArray[3]).jld2", "parameters", [CL, BEN], "meanPNC", dataArray[1], "meanPND", dataArray[2], "meanPR", dataArray[3], "meanDegree", dataArray[4], "meanCooperatorDegree", dataArray[5], "meanDefectorDegree", dataArray[6], "meanDistanceFromDefToCoop", dataArray[7], "meanDistanceInclusion", dataArray[8], "meanCooperationRatio", dataArray[9])
+    save("FixedCoopData_CL$(CL)_PR$(dataArray[3] - (dataArray[3] % 0.001)).jld2", "parameters", [CL, BEN], "meanPNC", dataArray[1], "meanPND", dataArray[2], "meanPR", dataArray[3], "meanDegree", dataArray[4], "meanCooperatorDegree", dataArray[5], "meanDefectorDegree", dataArray[6], "meanDistanceFromDefToCoop", dataArray[7], "meanDistanceInclusion", dataArray[8], "meanCooperationRatio", dataArray[9])
 end
 
 argTab = ArgParseSettings(description = "arguments and stuff, don't worry about it")
@@ -369,3 +370,6 @@ runSims(0.1, 1.0)
 @profile runSims(0.1, 1.0)
 Profile.print()
 #runSims(0.1, 1.0)=#
+
+
+round(pi, 2)
