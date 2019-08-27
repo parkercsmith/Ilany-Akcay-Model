@@ -45,11 +45,11 @@ mutable struct NetworkParameters
         numGens = 100000
         popSize = 100
         popPNC = zeros(Float64, popSize)
-        popPNC[:] .= 0.1
+        popPNC[:] .= 0.5
         #popPND = zeros(Float64, popSize)
         #popPND[:] .= 0.5
         popPR = zeros(Float64, popSize)
-        popPR[:] .= b #FIXED PR
+        popPR[:] .= .0001
         popStrategies = zeros(Int64, popSize)
         popStrategies[2:2:popSize] .= 1
         popFitness = zeros(Float64, popSize)
@@ -58,7 +58,7 @@ mutable struct NetworkParameters
         edgeMatrix = zeros(Int64, 100, 100)
         cost = 0.5
         synergism = 0.0
-        benefit = 3 #FIXED PR
+        benefit = b
         linkCost = cL
         mu = .01
         delta = 0.5
@@ -98,8 +98,7 @@ function probRandom(network::NetworkParameters)
         pRTotal += network.popPR[i]
     end
     pRTotal /= network.popSize
-    network.meanProbRandom += network.popPR[1] #pRTotal
-    #FIXED PR
+    network.meanProbRandom += pRTotal
 end
 
 function degrees(network::NetworkParameters)
@@ -204,11 +203,10 @@ function birth(network::NetworkParameters, child::Int64, parent::Int64)
         network.popStrategies[child] *= -1
     end
     network.popPNC[child] = network.popPNC[parent]
-    #if(rand()<network.mu)
-    #    network.popPNC[child] += randn()/100
-    #    network.popPNC[child] = clamp(network.popPNC[child], 0, 1)
-    #end
-    #FIXED PR
+    if(rand()<network.mu)
+        network.popPNC[child] += randn()/100
+        network.popPNC[child] = clamp(network.popPNC[child], 0, 1)
+    end
 
     #=
     network.popPND[child] = network.popPND[parent]
@@ -219,13 +217,14 @@ function birth(network::NetworkParameters, child::Int64, parent::Int64)
     =#
 
     network.popPR[child] = network.popPR[parent]
-    #if(rand()<network.mu)
-    #    network.popPR[child] += randn()/100
-    #    network.popPR[child] = clamp(network.popPR[child], 0, 1)
-    #end
-    #FIXED PR
-    network.edgeMatrix[parent, child] = 1
-    network.edgeMatrix[child, parent] = 1
+    if(rand()<network.mu)
+        network.popPR[child] += randn()/100
+        network.popPR[child] = clamp(network.popPR[child], 0, 1)
+    end
+    if(rand() < network.popPNC[child])
+        network.edgeMatrix[parent, child] = 1
+        network.edgeMatrix[child, parent] = 1
+    end #Pb != 0 now
 
     for(i) in 1:network.popSize
         if(i != child && network.edgeMatrix[i, child] == 0)
@@ -317,7 +316,7 @@ function runSims(CL::Float64, BEN::Float64)
             if(g > (network.numGens * network.popSize / 5) && (g % network.popSize) == 0)
                 coopRatio(network)
                 #probNeighbor(network)
-                probRandom(network)
+                #probRandom(network)
                 #degrees(network)
                 #distance(network)
             end
@@ -345,7 +344,7 @@ function runSims(CL::Float64, BEN::Float64)
         dataArray[9] += network.meanCoopRatio
     end
     dataArray[:] ./= Float64(repSims)
-    save("FixedCoopData_CL$(CL)_PR$(BEN).jld2", "parameters", [CL, BEN], "meanPNC", dataArray[1], "meanPND", dataArray[2], "meanPR", dataArray[3], "meanDegree", dataArray[4], "meanCooperatorDegree", dataArray[5], "meanDefectorDegree", dataArray[6], "meanDistanceFromDefToCoop", dataArray[7], "meanDistanceInclusion", dataArray[8], "meanCooperationRatio", dataArray[9])
+    save("PBData_CL$(CL)_B$(BEN).jld2", "parameters", [CL, BEN], "meanPNC", dataArray[1], "meanPND", dataArray[2], "meanPR", dataArray[3], "meanDegree", dataArray[4], "meanCooperatorDegree", dataArray[5], "meanDefectorDegree", dataArray[6], "meanDistanceFromDefToCoop", dataArray[7], "meanDistanceInclusion", dataArray[8], "meanCooperationRatio", dataArray[9])
 end
 
 argTab = ArgParseSettings(description = "arguments and stuff, don't worry about it")
@@ -356,7 +355,7 @@ argTab = ArgParseSettings(description = "arguments and stuff, don't worry about 
 end
 parsedArgs = parse_args(ARGS, argTab)
 currCostLink = parsedArgs["cLink"]
-for(b) in 0:0.002:0.05 #FIXED PR
+for(b) in 2:10
     currBenefit = Float64(b)
     runSims(currCostLink, currBenefit)
 end
@@ -370,6 +369,3 @@ runSims(0.1, 1.0)
 @profile runSims(0.1, 1.0)
 Profile.print()
 #runSims(0.1, 1.0)=#
-
-
-round(pi, 2)
