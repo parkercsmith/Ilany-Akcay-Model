@@ -227,13 +227,13 @@ function birth(network::NetworkParameters, child::Int64, parent::Int64)
     for(i) in 1:network.popSize
         if(i != child && network.edgeMatrix[i, child] == 0)
             if(network.edgeMatrix[i, parent] != 0)
-                if(network.popStrategies[i] == 1)
+                if(network.edgeMatrix[i, parent] == 1) #PNI MODE
                     if(rand() < network.popPNC[child])
                         network.edgeMatrix[i, child] = 1
                         network.edgeMatrix[child, i] = 1
                     end
                 else
-                    if(rand() < network.popPND[child])
+                    if(rand() < network.popPND[child])#PNR MODE
                         network.edgeMatrix[i, child] = 1
                         network.edgeMatrix[child, i] = 1
                     end
@@ -317,6 +317,7 @@ function runSims(CL::Float64, BEN::Float64)
                 #degrees(network)
                 #distance(network)
             end
+
         end
 
         #divides meanCooperationRatio by last 400 generations to get a true mean, then outputs
@@ -341,7 +342,7 @@ function runSims(CL::Float64, BEN::Float64)
         dataArray[9] += network.meanCoopRatio
     end
     dataArray[:] ./= Float64(repSims)
-    save("PBCDData_CL$(CL)_B$(BEN).jld2", "parameters", [CL, BEN], "meanPNC", dataArray[1], "meanPND", dataArray[2], "meanPR", dataArray[3], "meanDegree", dataArray[4], "meanCooperatorDegree", dataArray[5], "meanDefectorDegree", dataArray[6], "meanDistanceFromDefToCoop", dataArray[7], "meanDistanceInclusion", dataArray[8], "meanCooperationRatio", dataArray[9])
+    save("PBIRData_CL$(CL)_B$(BEN).jld2", "parameters", [CL, BEN], "meanPNC", dataArray[1], "meanPND", dataArray[2], "meanPR", dataArray[3], "meanDegree", dataArray[4], "meanCooperatorDegree", dataArray[5], "meanDefectorDegree", dataArray[6], "meanDistanceFromDefToCoop", dataArray[7], "meanDistanceInclusion", dataArray[8], "meanCooperationRatio", dataArray[9])
 end
 
 argTab = ArgParseSettings(description = "arguments and stuff, don't worry about it")
