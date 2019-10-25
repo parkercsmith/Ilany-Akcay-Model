@@ -9,13 +9,12 @@ using FileIO
 mutable struct NetworkParameters
 
     #measurement data
-    meanCoopRatio::Float64
+    meanCoopFreq::Float64
     meanProbNeighborCoop::Float64
     meanProbNeighborDef::Float64
     meanProbRandom::Float64
     meanDegree::Float64
-    meanCoopDegree::Float64
-    meanDefDegree::Float64
+    meanAssortment::Float64
     meanCoopDefDistance::Float64
     meanDistInclusion::Float64
 
@@ -61,9 +60,9 @@ mutable struct NetworkParameters
         benefit = b
         linkCost = cL
         mu = .01
-        delta = 0.5
+        delta = 0.1 #EDIT 0.5
 
-        new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, popPNC, popPND, popPR, popStrategies, zeros(Float64, popSize), popFitness, numGens, popSize, edgeMatrix, cost, benefit, synergism, linkCost, mu, delta)
+        new(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, popPNC, popPND, popPR, popStrategies, zeros(Float64, popSize), popFitness, numGens, popSize, edgeMatrix, cost, benefit, synergism, linkCost, mu, delta)
     end
 end
 
@@ -76,7 +75,7 @@ function coopRatio(network::NetworkParameters)
         end
     end
     coopCount /= network.popSize
-    network.meanCoopRatio += coopCount
+    network.meanCoopFreq += coopCount
 end
 
 function probNeighbor(network::NetworkParameters)
@@ -102,35 +101,39 @@ function probRandom(network::NetworkParameters)
 end
 
 function degrees(network::NetworkParameters)
-    cooperatorsPresent = 0
     degTotal = 0
-    coopDegTotal = 0
-    defDegTotal = 0
+    assmtTotal = 0
+    coopCount = 0.0
     for(i) in 1:network.popSize
-        degCounter = 0
+        if(network.popStrategies[i]==1)
+            coopCount+=1.0
+        end
+    end
+    coopCount = coopCount/network.popSize
+    for(i) in 1:network.popSize
+        degCounter = 0.0
+        assmtCounter = 0.0
         for(ii) in 1:network.popSize
             if(network.edgeMatrix[i, ii] != 0)
-                degCounter += 1
+                degCounter += 1.0
+                for(iii) in 1:network.popSize
+                    if(network.edgeMatrix[ii, iii] != 0 && network.edgeMatrix[i, iii] != 0)
+                        assmtCounter += 1.0
+                    end
+                end
             end
         end
         degTotal += degCounter
-        if(network.popStrategies[i] == 1)
-            coopDegTotal += degCounter
-            cooperatorsPresent += 1
+        if(network.popStrategies[i]==1)
+            assmtTotal+= (assmtCounter/degCounter)-(coopCount)
         else
-            defDegTotal += degCounter
+            assmtTotal+= (assmtCounter/degCounter)-(1-coopCount)
         end
     end
     degTotal /= network.popSize
-    defDegTotal /= (network.popSize - cooperatorsPresent)
-    coopDegTotal /= cooperatorsPresent
+    assmtTotal /= network.popSize
     network.meanDegree += degTotal
-    if(coopDegTotal == coopDegTotal)
-        network.meanCoopDegree += coopDegTotal
-    end
-    if(defDegTotal == defDegTotal)
-        network.meanDefDegree += defDegTotal
-    end
+    network.meanAssortment += assmtTotal
 end
 
 function distance(network::NetworkParameters)
@@ -188,11 +191,9 @@ function death(network::NetworkParameters)
 end
 
 function findMom(network::NetworkParameters, kID::Int64)
+    network.popFitness[kID] = 0
     fitWeights = weights(network.popFitness)
-    momIndex = kID
-    while(momIndex == kID)
-        momIndex = sample(1:network.popSize, fitWeights)
-    end
+    momIndex = sample(1:network.popSize, fitWeights)
     momIndex
 end
 
@@ -222,7 +223,7 @@ function birth(network::NetworkParameters, child::Int64, parent::Int64)
     if(rand() < network.popPNC[child])
         network.edgeMatrix[parent, child] = 1
         network.edgeMatrix[child, parent] = 1
-    end #Pb != 0 now
+    end #Pb != 1 now
 
     for(i) in 1:network.popSize
         if(i != child && network.edgeMatrix[i, child] == 0)
@@ -233,7 +234,7 @@ function birth(network::NetworkParameters, child::Int64, parent::Int64)
                         network.edgeMatrix[child, i] = 1
                     end
                 else
-                    if(rand() < network.popPND[child])#PND MODE
+                    if(rand() < network.popPND[child]) #PND MODE
                         network.edgeMatrix[i, child] = 1
                         network.edgeMatrix[child, i] = 1
                     end
@@ -292,7 +293,7 @@ function getDegree(network::NetworkParameters) #made less efficient by 2 in edge
 end
 
 function runSims(CL::Float64, BEN::Float64)
-    dataArray = zeros(9)
+    dataArray = zeros(8)
     repSims = 10
     for(x) in 1:repSims
 
@@ -314,7 +315,7 @@ function runSims(CL::Float64, BEN::Float64)
                 coopRatio(network)
                 #probNeighbor(network)
                 #probRandom(network)
-                #degrees(network)
+                degrees(network)
                 #distance(network)
             end
 
@@ -325,9 +326,8 @@ function runSims(CL::Float64, BEN::Float64)
         network.meanProbNeighborDef /= 80000.0
         network.meanProbRandom /= 80000.0
         network.meanDegree /= 80000.0
-        network.meanCoopDegree /= 80000.0
-        network.meanDefDegree /= 80000.0
-        network.meanCoopRatio /= 80000.0
+        network.meanAssortment /= 80000.0
+        network.meanCoopFreq /= 80000.0
         network.meanCoopDefDistance /= 80000.0
         network.meanDistInclusion /= 80000.0
 
@@ -335,14 +335,14 @@ function runSims(CL::Float64, BEN::Float64)
         dataArray[2] += network.meanProbNeighborDef
         dataArray[3] += network.meanProbRandom
         dataArray[4] += network.meanDegree
-        dataArray[5] += network.meanCoopDegree
-        dataArray[6] += network.meanDefDegree
-        dataArray[7] += network.meanCoopDefDistance
-        dataArray[8] += network.meanDistInclusion
-        dataArray[9] += network.meanCoopRatio
+        dataArray[5] += network.meanAssortment
+        dataArray[6] += network.meanCoopDefDistance
+        dataArray[7] += network.meanDistInclusion
+        dataArray[8] += network.meanCoopFreq
     end
     dataArray[:] ./= Float64(repSims)
-    save("PBCDData_CL$(CL)_B$(BEN).jld2", "parameters", [CL, BEN], "meanPNC", dataArray[1], "meanPND", dataArray[2], "meanPR", dataArray[3], "meanDegree", dataArray[4], "meanCooperatorDegree", dataArray[5], "meanDefectorDegree", dataArray[6], "meanDistanceFromDefToCoop", dataArray[7], "meanDistanceInclusion", dataArray[8], "meanCooperationRatio", dataArray[9])
+    #EDIT NAME
+    save("newAssortmentCD_CL$(CL)_B$(BEN).jld2", "parameters", [CL, BEN], "meanPNI", dataArray[1], "meanPNR", dataArray[2], "meanPR", dataArray[3], "meanDegree", dataArray[4], "meanAssortment", dataArray[5], "meanDistanceFromDefToCoop", dataArray[6], "meanDistanceInclusion", dataArray[7], "meanCooperationRatio", dataArray[8])
 end
 
 argTab = ArgParseSettings(description = "arguments and stuff, don't worry about it")
@@ -365,5 +365,5 @@ using Profile
 Profile.clear()
 runSims(0.1, 1.0)
 @profile runSims(0.1, 1.0)
-Profile.print()
+#Profile.print()
 #runSims(0.1, 1.0)=#
