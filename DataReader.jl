@@ -18,9 +18,9 @@ dataMatrix = zeros(Float64, 11, 11, 9)
 #[9] = mean distance from cooperator to defector
 
 
-for (c) in 0:10
-    for (b) in 0:10
-        for(i) in 1:5
+for (c) in 3:4#EDIT
+    for (b) in 1:10#EDIT
+        for(i) in 4:4#EDIT
             currentDict = load("expData"*dataTypeList[i]*"_CL$(Float64(c)/10.0)_B$(b).0.jld2")
 
             if(i==1)
@@ -48,6 +48,8 @@ end
 
 xs = [string("cLink ", i) for i = 0.0:0.1:1.0]
 ys = [string("B ", i) for i = 0:10]
-#PN
-z = dataMatrix[1:11,1:11,3]
+#PR
+z = dataMatrix[1:11,1:11,8]
 heatmap(xs, ys, z, aspect_ratio = 1)
+
+pwd()
